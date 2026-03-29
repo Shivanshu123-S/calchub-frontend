@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>CalcHub Admin Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a12;--sf:#0f0f1a;--card:#141424;--b1:#1e1e35;--b2:#252545;
+  --tx:#e8e8ff;--mu:#6666aa;--acc:#7c3aed;--acc2:#059669;--acc3:#dc2626;
+  --acc4:#d97706;--r:10px;
+  --green:#10b981;--red:#ef4444;--yellow:#f59e0b;--blue:#3b82f6;
+}
+body{background:var(--bg);color:var(--tx);font-family:'JetBrains Mono',monospace;min-height:100vh;display:flex;flex-direction:column}
+
+/* LOGIN */
+#login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;background:var(--bg)}
+.login-box{background:var(--card);border:1px solid var(--b1);border-radius:16px;padding:2.5rem;width:100%;max-width:380px;box-shadow:0 24px 64px rgba(0,0,0,.6)}
+.login-logo{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;background:linear-gradient(135deg,#7c3aed,#059669);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:.3rem}
+.login-sub{font-size:.72rem;color:var(--mu);margin-bottom:2rem}
+.inp{width:100%;padding:.7rem .9rem;background:#0a0a12;border:1px solid var(--b1);border-radius:8px;color:var(--tx);font-family:'JetBrains Mono',monospace;font-size:.82rem;outline:none;transition:border .15s;margin-bottom:.75rem;display:block}
+.inp:focus{border-color:var(--acc)}
+.btn{display:inline-flex;align-items:center;gap:.4rem;padding:.65rem 1.2rem;border:none;border-radius:8px;font-family:'Syne',sans-serif;font-weight:700;font-size:.78rem;cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn-acc{background:var(--acc);color:#fff}
+.btn-acc:hover{filter:brightness(1.15)}
+.btn-green{background:var(--green);color:#fff}
+.btn-green:hover{filter:brightness(1.1)}
+.btn-red{background:var(--red);color:#fff}
+.btn-red:hover{filter:brightness(1.1)}
+.btn-ghost{background:var(--card);border:1px solid var(--b1);color:var(--mu)}
+.btn-ghost:hover{color:var(--tx);border-color:var(--mu)}
+.btn-full{width:100%;justify-content:center}
+.err-box{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);color:#f87171;border-radius:8px;padding:.5rem .8rem;font-size:.72rem;margin-bottom:.75rem;display:none}
+.err-box.on{display:block}
+
+/* LAYOUT */
+#app{display:none;height:100vh;overflow:hidden;flex-direction:row}
+#app.show{display:flex}
+
+/* SIDEBAR */
+aside{width:220px;min-width:220px;background:var(--sf);border-right:1px solid var(--b1);display:flex;flex-direction:column;overflow-y:auto}
+.sidebar-logo{padding:1.25rem 1rem;border-bottom:1px solid var(--b1)}
+.sidebar-logo .brand{font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;background:linear-gradient(135deg,#7c3aed,#059669);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.sidebar-logo .role-badge{font-size:.6rem;background:rgba(124,58,237,.2);color:#a78bfa;padding:.2rem .5rem;border-radius:20px;margin-top:.25rem;display:inline-block}
+nav{flex:1;padding:.75rem 0}
+.nav-item{display:flex;align-items:center;gap:.6rem;padding:.6rem 1rem;font-size:.75rem;color:var(--mu);cursor:pointer;transition:all .15s;border-left:3px solid transparent}
+.nav-item:hover{color:var(--tx);background:rgba(255,255,255,.03)}
+.nav-item.active{color:#a78bfa;background:rgba(124,58,237,.08);border-left-color:var(--acc)}
+.nav-icon{font-size:.95rem;width:18px;text-align:center}
+.nav-sep{padding:.4rem 1rem;font-size:.6rem;color:var(--mu);text-transform:uppercase;letter-spacing:.08em;margin-top:.5rem}
+.sidebar-footer{padding:.75rem 1rem;border-top:1px solid var(--b1)}
+.user-chip{display:flex;align-items:center;gap:.5rem;padding:.4rem .6rem;background:var(--card);border-radius:8px;border:1px solid var(--b1)}
+.user-av{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--acc),var(--acc2));display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:800;font-family:'Syne',sans-serif;flex-shrink:0}
+.user-info{flex:1;min-width:0}
+.user-name{font-size:.7rem;font-weight:700;font-family:'Syne',sans-serif;truncate:true;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.user-role{font-size:.58rem;color:var(--mu)}
+.logout-btn{background:none;border:none;color:var(--mu);cursor:pointer;font-size:.8rem;padding:.2rem;transition:color .15s}
+.logout-btn:hover{color:var(--red)}
+
+/* MAIN */
+main{flex:1;overflow-y:auto;display:flex;flex-direction:column}
+.topbar{padding:.75rem 1.5rem;border-bottom:1px solid var(--b1);display:flex;align-items:center;justify-content:space-between;background:var(--sf);position:sticky;top:0;z-index:100}
+.page-title{font-family:'Syne',sans-serif;font-weight:800;font-size:1rem}
+.topbar-actions{display:flex;gap:.5rem;align-items:center}
+.content{padding:1.5rem;flex:1}
+
+/* SECTIONS */
+.section{display:none}
+.section.active{display:block}
+
+/* STAT CARDS */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:.85rem;margin-bottom:1.5rem}
+.stat-card{background:var(--card);border:1px solid var(--b1);border-radius:var(--r);padding:1.1rem;position:relative;overflow:hidden}
+.stat-card::after{content:'';position:absolute;top:0;right:0;width:60px;height:60px;border-radius:50%;filter:blur(30px);opacity:.3}
+.stat-card.purple::after{background:var(--acc)}
+.stat-card.green::after{background:var(--green)}
+.stat-card.yellow::after{background:var(--yellow)}
+.stat-card.blue::after{background:var(--blue)}
+.stat-label{font-size:.65rem;color:var(--mu);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.4rem}
+.stat-val{font-size:1.8rem;font-weight:700;line-height:1.1;font-family:'Syne',sans-serif}
+.stat-sub{font-size:.65rem;color:var(--mu);margin-top:.3rem}
+
+/* TABLE */
+.table-wrap{background:var(--card);border:1px solid var(--b1);border-radius:var(--r);overflow:hidden}
+.table-head{padding:.85rem 1rem;border-bottom:1px solid var(--b1);display:flex;align-items:center;justify-content:space-between;gap:.75rem;flex-wrap:wrap}
+.table-title{font-family:'Syne',sans-serif;font-weight:700;font-size:.85rem}
+.search-wrap{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap}
+.search-inp{background:var(--bg);border:1px solid var(--b1);border-radius:6px;color:var(--tx);font-family:'JetBrains Mono',monospace;font-size:.75rem;padding:.4rem .7rem;outline:none;width:180px}
+.search-inp:focus{border-color:var(--acc)}
+select.filter-sel{background:var(--bg);border:1px solid var(--b1);border-radius:6px;color:var(--tx);font-family:'JetBrains Mono',monospace;font-size:.73rem;padding:.35rem .6rem;outline:none;cursor:pointer}
+table{width:100%;border-collapse:collapse}
+th{padding:.65rem 1rem;text-align:left;font-size:.65rem;color:var(--mu);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--b1);font-weight:500;white-space:nowrap}
+td{padding:.6rem 1rem;font-size:.75rem;border-bottom:1px solid var(--b1)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,.015)}
+.badge{display:inline-flex;align-items:center;padding:.15rem .5rem;border-radius:20px;font-size:.62rem;font-weight:700;white-space:nowrap}
+.badge-admin{background:rgba(124,58,237,.2);color:#a78bfa}
+.badge-premium{background:rgba(245,158,11,.2);color:#fbbf24}
+.badge-user{background:rgba(255,255,255,.06);color:var(--mu)}
+.badge-free{background:rgba(255,255,255,.06);color:var(--mu)}
+.badge-pro{background:rgba(5,150,105,.2);color:#34d399}
+.badge-active{background:rgba(16,185,129,.15);color:#10b981}
+.badge-inactive{background:rgba(239,68,68,.15);color:#f87171}
+.action-btn{background:none;border:none;cursor:pointer;padding:.25rem .45rem;border-radius:5px;font-size:.72rem;transition:all .15s}
+.action-btn:hover{background:rgba(255,255,255,.08)}
+.pagination{display:flex;align-items:center;justify-content:space-between;padding:.75rem 1rem;border-top:1px solid var(--b1);font-size:.72rem;color:var(--mu)}
+.page-btns{display:flex;gap:.35rem}
+.page-btn{background:var(--card);border:1px solid var(--b1);color:var(--tx);padding:.3rem .65rem;border-radius:5px;cursor:pointer;font-size:.7rem;font-family:'JetBrains Mono',monospace}
+.page-btn:hover{border-color:var(--acc);color:var(--acc)}
+.page-btn.active{background:var(--acc);border-color:var(--acc);color:#fff}
+
+/* MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:1000;display:none;align-items:center;justify-content:center;padding:1rem;backdrop-filter:blur(4px)}
+.modal-bg.open{display:flex}
+.modal{background:var(--card);border:1px solid var(--b1);border-radius:14px;width:100%;max-width:580px;max-height:90vh;overflow-y:auto;box-shadow:0 24px 64px rgba(0,0,0,.6)}
+.modal-hdr{padding:1rem 1.25rem;border-bottom:1px solid var(--b1);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--card);z-index:10}
+.modal-title{font-family:'Syne',sans-serif;font-weight:700;font-size:.9rem}
+.modal-close{background:none;border:none;color:var(--mu);cursor:pointer;font-size:1.1rem;padding:.2rem;transition:color .15s}
+.modal-close:hover{color:var(--tx)}
+.modal-body{padding:1.25rem}
+.form-group{margin-bottom:1rem}
+.form-label{display:block;font-size:.7rem;color:var(--mu);margin-bottom:.35rem;letter-spacing:.04em}
+.form-inp{width:100%;padding:.65rem .9rem;background:var(--bg);border:1px solid var(--b1);border-radius:8px;color:var(--tx);font-family:'JetBrains Mono',monospace;font-size:.78rem;outline:none;transition:border .15s}
+.form-inp:focus{border-color:var(--acc)}
+.form-textarea{min-height:90px;resize:vertical;line-height:1.6}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
+.modal-footer{padding:.9rem 1.25rem;border-top:1px solid var(--b1);display:flex;gap:.5rem;justify-content:flex-end}
+
+/* TOP CALCULATORS */
+.top-calc-list{padding:.5rem}
+.top-calc-item{display:flex;align-items:center;gap:.75rem;padding:.55rem .5rem;border-radius:7px;transition:background .12s}
+.top-calc-item:hover{background:rgba(255,255,255,.03)}
+.rank{font-size:.65rem;color:var(--mu);width:20px;text-align:center;font-weight:700}
+.calc-name-col{flex:1;font-size:.75rem}
+.calc-count{font-size:.7rem;color:var(--acc);font-weight:700}
+.mini-bar{height:4px;border-radius:2px;background:var(--acc);opacity:.5;margin-top:.2rem}
+
+/* DESCRIPTION CARD */
+.desc-card{background:var(--card);border:1px solid var(--b1);border-radius:8px;padding:.85rem 1rem;margin-bottom:.5rem;display:flex;align-items:center;gap:.85rem;transition:border .15s}
+.desc-card:hover{border-color:var(--b2)}
+.desc-info{flex:1;min-width:0}
+.desc-id{font-size:.65rem;color:var(--mu);font-family:'JetBrains Mono',monospace}
+.desc-name{font-size:.78rem;font-family:'Syne',sans-serif;font-weight:700;margin-bottom:.15rem}
+.desc-preview{font-size:.68rem;color:var(--mu);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.desc-actions{display:flex;gap:.35rem;flex-shrink:0}
+.pill{display:inline-block;padding:.12rem .45rem;border-radius:20px;font-size:.58rem;font-weight:700}
+
+/* ANALYTICS */
+.chart-area{background:var(--card);border:1px solid var(--b1);border-radius:var(--r);padding:1rem}
+.chart-label{font-size:.68rem;color:var(--mu);margin-bottom:.75rem;text-transform:uppercase;letter-spacing:.06em}
+.bar-chart{display:flex;align-items:flex-end;gap:4px;height:100px}
+.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px}
+.bar-fill{width:100%;border-radius:3px 3px 0 0;background:linear-gradient(180deg,var(--acc),rgba(124,58,237,.3));min-height:2px;transition:height .3s}
+.bar-lbl{font-size:.5rem;color:var(--mu);white-space:nowrap;transform:rotate(-40deg);transform-origin:center top}
+.section-bars{display:flex;flex-direction:column;gap:.4rem}
+.section-bar-item{display:flex;align-items:center;gap:.65rem}
+.section-bar-name{font-size:.68rem;color:var(--tx);width:100px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.section-bar-track{flex:1;height:8px;background:var(--b1);border-radius:4px;overflow:hidden}
+.section-bar-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--acc),var(--acc2))}
+.section-bar-val{font-size:.65rem;color:var(--mu);width:30px;text-align:right}
+
+/* EMPTY STATE */
+.empty{text-align:center;padding:3rem 1rem;color:var(--mu)}
+.empty-icon{font-size:2.5rem;margin-bottom:.75rem}
+.empty-text{font-size:.8rem;line-height:1.7}
+
+/* TOAST */
+.toast-wrap{position:fixed;bottom:1.5rem;right:1.5rem;z-index:9999;display:flex;flex-direction:column;gap:.4rem;pointer-events:none}
+.toast{background:var(--card);border:1px solid var(--b1);border-radius:8px;padding:.55rem 1rem;font-size:.75rem;display:flex;align-items:center;gap:.4rem;pointer-events:all;animation:tIn .25s ease;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+.toast.out{animation:tOut .2s ease forwards}
+@keyframes tIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:none}}
+@keyframes tOut{to{opacity:0;transform:translateX(20px)}}
+
+/* LOADER */
+.loader{display:inline-block;width:14px;height:14px;border:2px solid var(--b1);border-top-color:var(--acc);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-row td{text-align:center;padding:2rem;color:var(--mu);font-size:.75rem}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  aside{width:52px;min-width:52px}
+  .nav-item span{display:none}
+  .nav-sep{display:none}
+  .sidebar-logo .brand,.sidebar-logo .role-badge,.user-info,.logout-btn{display:none}
+  .user-chip{justify-content:center;padding:.3rem}
+  .form-row{grid-template-columns:1fr}
+}
+@media(max-width:520px){
+  .stats-grid{grid-template-columns:1fr 1fr}
+  .content{padding:1rem}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">CalcHub</div>
+    <div class="login-sub">Admin Panel — Authorized Access Only</div>
+    <div class="err-box" id="login-err"></div>
+    <input class="inp" type="email" id="l-email" placeholder="Admin email address" autocomplete="email"/>
+    <input class="inp" type="password" id="l-pass" placeholder="Password" autocomplete="current-password"/>
+    <button class="btn btn-acc btn-full" id="login-btn" onclick="doAdminLogin()">🔐 Login to Admin Panel</button>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app">
+  <aside>
+    <div class="sidebar-logo">
+      <div class="brand">CalcHub</div>
+      <div class="role-badge">⚡ Admin</div>
+    </div>
+    <nav>
+      <div class="nav-sep">Main</div>
+      <div class="nav-item active" onclick="showSection('dashboard')">
+        <span class="nav-icon">📊</span><span>Dashboard</span>
+      </div>
+      <div class="nav-item" onclick="showSection('users')">
+        <span class="nav-icon">👥</span><span>Users</span>
+      </div>
+      <div class="nav-sep">Content</div>
+      <div class="nav-item" onclick="showSection('descriptions')">
+        <span class="nav-icon">📝</span><span>Calculator Info</span>
+      </div>
+      <div class="nav-sep">Data</div>
+      <div class="nav-item" onclick="showSection('analytics')">
+        <span class="nav-icon">📈</span><span>Analytics</span>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-chip">
+        <div class="user-av" id="sb-av">A</div>
+        <div class="user-info">
+          <div class="user-name" id="sb-name">Admin</div>
+          <div class="user-role">Administrator</div>
+        </div>
+        <button class="logout-btn" onclick="doLogout()" title="Logout">⏏</button>
+      </div>
+    </div>
+  </aside>
+
+  <main>
+    <div class="topbar">
+      <div class="page-title" id="page-title">Dashboard</div>
+      <div class="topbar-actions">
+        <span style="font-size:.68rem;color:var(--mu)" id="topbar-time"></span>
+      </div>
+    </div>
+    <div class="content">
+
+      <!-- DASHBOARD -->
+      <div class="section active" id="sec-dashboard">
+        <div class="stats-grid" id="stats-grid">
+          <div class="stat-card purple"><div class="stat-label">Total Users</div><div class="stat-val" id="s-users">—</div><div class="stat-sub" id="s-users-sub">Loading…</div></div>
+          <div class="stat-card green"><div class="stat-label">Today Signups</div><div class="stat-val" id="s-today">—</div><div class="stat-sub" id="s-today-sub">—</div></div>
+          <div class="stat-card yellow"><div class="stat-label">Premium Users</div><div class="stat-val" id="s-premium">—</div><div class="stat-sub">Paid subscribers</div></div>
+          <div class="stat-card blue"><div class="stat-label">Saved Calcs</div><div class="stat-val" id="s-calcs">—</div><div class="stat-sub" id="s-calcs-sub">Avg per user</div></div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
+          <div class="table-wrap">
+            <div class="table-head"><div class="table-title">🔥 Top Calculators</div></div>
+            <div class="top-calc-list" id="top-calcs">
+              <div class="empty"><div class="empty-icon">📊</div><div class="empty-text">Loading…</div></div>
+            </div>
+          </div>
+          <div class="chart-area">
+            <div class="chart-label">Calculator Descriptions Added</div>
+            <div style="font-size:2.5rem;font-family:'Syne',sans-serif;font-weight:800;color:var(--acc)" id="desc-count">—</div>
+            <div style="font-size:.7rem;color:var(--mu);margin-top:.4rem">descriptions in database</div>
+            <div style="margin-top:1rem">
+              <div class="chart-label">Recent Signups (last 5)</div>
+              <div id="recent-users" style="display:flex;flex-direction:column;gap:.4rem;margin-top:.5rem"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- USERS -->
+      <div class="section" id="sec-users">
+        <div class="table-wrap">
+          <div class="table-head">
+            <div class="table-title">All Users</div>
+            <div class="search-wrap">
+              <input class="search-inp" id="user-search" placeholder="Search name/email…" oninput="loadUsers()"/>
+              <select class="filter-sel" id="user-role-filter" onchange="loadUsers()">
+                <option value="">All Roles</option>
+                <option value="user">User</option>
+                <option value="premium">Premium</option>
+                <option value="admin">Admin</option>
+              </select>
+              <select class="filter-sel" id="user-plan-filter" onchange="loadUsers()">
+                <option value="">All Plans</option>
+                <option value="free">Free</option>
+                <option value="pro">Pro</option>
+                <option value="lifetime">Lifetime</option>
+              </select>
+            </div>
+          </div>
+          <div style="overflow-x:auto">
+            <table>
+              <thead><tr>
+                <th>Name</th><th>Email</th><th>Role</th><th>Plan</th><th>Status</th><th>Joined</th><th>Logins</th><th>Actions</th>
+              </tr></thead>
+              <tbody id="users-tbody">
+                <tr class="loading-row"><td colspan="8"><div class="loader"></div> Loading users…</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="pagination">
+            <span id="users-pagination-info">—</span>
+            <div class="page-btns" id="users-page-btns"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DESCRIPTIONS -->
+      <div class="section" id="sec-descriptions">
+        <div class="table-wrap">
+          <div class="table-head">
+            <div class="table-title">📝 Calculator Descriptions</div>
+            <div class="search-wrap">
+              <input class="search-inp" id="desc-search" placeholder="Search calc name…" oninput="loadDescriptions()"/>
+              <select class="filter-sel" id="desc-section-filter" onchange="loadDescriptions()">
+                <option value="">All Sections</option>
+                <option value="finance">Finance</option>
+                <option value="mathematics">Mathematics</option>
+                <option value="physics">Physics</option>
+                <option value="chemistry">Chemistry</option>
+                <option value="biology">Biology</option>
+                <option value="civil">Civil Eng</option>
+                <option value="electrical">Electrical</option>
+                <option value="cs">Computer Science</option>
+                <option value="health">Health</option>
+                <option value="geography">Geography</option>
+                <option value="agriculture">Agriculture</option>
+                <option value="education">Education</option>
+                <option value="automotive">Automotive</option>
+                <option value="realestate">Real Estate</option>
+                <option value="nutrition">Nutrition</option>
+              </select>
+              <button class="btn btn-acc" onclick="openDescModal(null)">+ Add New</button>
+            </div>
+          </div>
+          <div style="padding:.75rem" id="descs-list">
+            <div class="empty"><div class="loader"></div> Loading…</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ANALYTICS -->
+      <div class="section" id="sec-analytics">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
+          <div class="chart-area" id="daily-chart">
+            <div class="chart-label">Daily Calculator Usage (Last 30 days)</div>
+            <div class="bar-chart" id="daily-bars">
+              <div class="empty" style="width:100%"><div class="loader"></div></div>
+            </div>
+          </div>
+          <div class="chart-area" id="section-chart">
+            <div class="chart-label">Usage by Section</div>
+            <div class="section-bars" id="section-bars">
+              <div class="empty"><div class="loader"></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <div class="table-head"><div class="table-title">Recent Signups</div></div>
+          <div style="overflow-x:auto">
+            <table>
+              <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Plan</th><th>Joined</th></tr></thead>
+              <tbody id="analytics-users"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<!-- USER EDIT MODAL -->
+<div class="modal-bg" id="user-modal">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div class="modal-title" id="user-modal-title">Edit User</div>
+      <button class="modal-close" onclick="closeModal('user-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <div style="font-size:.8rem;font-family:'Syne',sans-serif;font-weight:700" id="um-name">—</div>
+        <div style="font-size:.72rem;color:var(--mu)" id="um-email">—</div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Role</label>
+          <select class="form-inp" id="um-role">
+            <option value="user">User</option>
+            <option value="premium">Premium</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Plan</label>
+          <select class="form-inp" id="um-plan">
+            <option value="free">Free</option>
+            <option value="pro">Pro</option>
+            <option value="lifetime">Lifetime</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Status</label>
+        <select class="form-inp" id="um-status">
+          <option value="true">Active ✅</option>
+          <option value="false">Banned ❌</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-red" id="um-delete-btn" onclick="deleteUser()">🗑 Delete User</button>
+      <button class="btn btn-ghost" onclick="closeModal('user-modal')">Cancel</button>
+      <button class="btn btn-green" onclick="saveUser()">💾 Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- DESCRIPTION MODAL -->
+<div class="modal-bg" id="desc-modal">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div class="modal-title" id="desc-modal-title">Add Calculator Description</div>
+      <button class="modal-close" onclick="closeModal('desc-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Calculator ID *</label>
+          <input class="form-inp" id="dm-id" placeholder="e.g. emi, bmi, gst"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Calculator Name *</label>
+          <input class="form-inp" id="dm-name" placeholder="e.g. EMI Calculator"/>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Section</label>
+          <select class="form-inp" id="dm-section">
+            <option value="">Select section</option>
+            <option value="finance">Finance & Banking</option>
+            <option value="mathematics">Mathematics</option>
+            <option value="physics">Physics</option>
+            <option value="chemistry">Chemistry</option>
+            <option value="biology">Biology & Medicine</option>
+            <option value="civil">Civil Engineering</option>
+            <option value="electrical">Electrical Eng</option>
+            <option value="cs">Computer Science</option>
+            <option value="health">Health & Fitness</option>
+            <option value="geography">Geography</option>
+            <option value="agriculture">Agriculture</option>
+            <option value="education">Education</option>
+            <option value="automotive">Automotive</option>
+            <option value="realestate">Real Estate</option>
+            <option value="nutrition">Nutrition & Food</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Status</label>
+          <select class="form-inp" id="dm-published">
+            <option value="true">Published ✅</option>
+            <option value="false">Draft 📝</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">📖 Description (What is this calculator?)</label>
+        <textarea class="form-inp form-textarea" id="dm-desc" placeholder="Is calculator ke baare mein detail mein batao — kya karta hai, kab use karte hain..."></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">🔢 Formula</label>
+        <textarea class="form-inp form-textarea" id="dm-formula" placeholder="e.g. EMI = P × r × (1+r)^n / ((1+r)^n - 1)" style="min-height:60px"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">🔧 How to Use (Step by step)</label>
+        <textarea class="form-inp form-textarea" id="dm-howto" placeholder="Step 1: Principal amount enter karo&#10;Step 2: Interest rate % enter karo&#10;Step 3: Tenure months mein..."></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">💼 Use Cases (Kahan use hota hai?)</label>
+        <textarea class="form-inp form-textarea" id="dm-uses" placeholder="Home loan EMI calculate karne ke liye, Car loan ke liye, Personal loan planning..." style="min-height:60px"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">💡 Tips & Tricks</label>
+        <textarea class="form-inp form-textarea" id="dm-tips" placeholder="Tip 1: Rate monthly mein convert karo&#10;Tip 2: Longer tenure se EMI kam hoti hai but interest zyada..." style="min-height:60px"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">📊 Examples</label>
+        <textarea class="form-inp form-textarea" id="dm-examples" placeholder="Example: ₹5L loan at 8.5% for 5 years = EMI ₹10,249/month..."></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">🏷️ Tags (comma separated)</label>
+        <input class="form-inp" id="dm-tags" placeholder="finance, loan, EMI, banking, interest"/>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('desc-modal')">Cancel</button>
+      <button class="btn btn-acc" onclick="saveDescription()">💾 Save Description</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOASTS -->
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<script>
+const API = 'https://calchub-backend.vercel.app/api';
+let TOKEN = localStorage.getItem('admin_token') || null;
+let currentUserId = null, currentDescId = null, usersPage = 1;
+
+// ─── UTILS ───
+function toast(msg, type='info') {
+  const icons = {info:'ℹ️', success:'✅', error:'❌', warn:'⚠️'};
+  const w = document.getElementById('toast-wrap');
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.innerHTML = (icons[type]||'📢') + ' ' + msg;
+  w.appendChild(t);
+  setTimeout(() => { t.classList.add('out'); setTimeout(() => t.remove(), 250); }, 3000);
+}
+
+function fmtDate(d) {
+  if (!d) return '—';
+  return new Date(d).toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
+}
+
+async function api(path, method='GET', body=null) {
+  const opts = { method, headers: { 'Content-Type':'application/json', 'Authorization': 'Bearer ' + TOKEN } };
+  if (body) opts.body = JSON.stringify(body);
+  const r = await fetch(API + path, opts);
+  return r.json();
+}
+
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+
+// ─── LOGIN ───
+async function doAdminLogin() {
+  const email = document.getElementById('l-email').value.trim();
+  const pass = document.getElementById('l-pass').value;
+  const errEl = document.getElementById('login-err');
+  const btn = document.getElementById('login-btn');
+  if (!email || !pass) { errEl.textContent = 'Email aur password required'; errEl.classList.add('on'); return; }
+  btn.innerHTML = '<div class="loader"></div> Logging in…';
+  btn.disabled = true;
+  try {
+    const d = await api('/auth/login', 'POST', { email, pass: pass, password: pass });
+    if (!d.success) { errEl.textContent = d.message || 'Login failed'; errEl.classList.add('on'); btn.innerHTML = '🔐 Login to Admin Panel'; btn.disabled = false; return; }
+    if (d.user?.role !== 'admin') { errEl.textContent = 'Admin access nahi hai is account ko'; errEl.classList.add('on'); btn.innerHTML = '🔐 Login to Admin Panel'; btn.disabled = false; return; }
+    TOKEN = d.token;
+    localStorage.setItem('admin_token', TOKEN);
+    initApp(d.user);
+  } catch(e) { errEl.textContent = 'Network error — check connection'; errEl.classList.add('on'); btn.innerHTML = '🔐 Login to Admin Panel'; btn.disabled = false; }
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Enter' && !document.getElementById('login-screen').style.display) doAdminLogin(); });
+
+// ─── INIT ───
+function initApp(user) {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').classList.add('show');
+  document.getElementById('sb-name').textContent = user.name?.split(' ')[0] || 'Admin';
+  document.getElementById('sb-av').textContent = (user.name||'A')[0].toUpperCase();
+  // Clock
+  setInterval(() => { document.getElementById('topbar-time').textContent = new Date().toLocaleTimeString('en-IN', {hour:'2-digit',minute:'2-digit'}); }, 1000);
+  loadDashboard();
+}
+
+function doLogout() {
+  TOKEN = null; localStorage.removeItem('admin_token');
+  document.getElementById('app').classList.remove('show');
+  document.getElementById('login-screen').style.display = 'flex';
+}
+
+// Check existing session
+(async function() {
+  if (!TOKEN) return;
+  try {
+    const d = await api('/auth/me');
+    if (d.success && d.user?.role === 'admin') initApp(d.user);
+    else { TOKEN = null; localStorage.removeItem('admin_token'); }
+  } catch(e) {}
+})();
+
+// ─── NAVIGATION ───
+function showSection(name) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('sec-'+name).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => { if (n.textContent.toLowerCase().includes(name==='dashboard'?'dashboard':name==='users'?'user':name==='descriptions'?'info':name)) n.classList.add('active'); });
+  const titles = { dashboard:'📊 Dashboard', users:'👥 User Management', descriptions:'📝 Calculator Info', analytics:'📈 Analytics' };
+  document.getElementById('page-title').textContent = titles[name] || name;
+  if (name === 'users') loadUsers();
+  if (name === 'descriptions') loadDescriptions();
+  if (name === 'analytics') loadAnalytics();
+}
+
+// ─── DASHBOARD ───
+async function loadDashboard() {
+  try {
+    const d = await api('/admin/dashboard');
+    if (!d.success) return;
+    const s = d.stats;
+    document.getElementById('s-users').textContent = s.users.total;
+    document.getElementById('s-users-sub').textContent = `+${s.users.thisMonth} this month`;
+    document.getElementById('s-today').textContent = s.users.today;
+    document.getElementById('s-today-sub').textContent = `+${s.users.thisMonth} this month`;
+    document.getElementById('s-premium').textContent = s.users.premium;
+    document.getElementById('s-calcs').textContent = s.calculations.total;
+    document.getElementById('s-calcs-sub').textContent = `avg ${s.calculations.avgPerUser} per user`;
+    document.getElementById('desc-count').textContent = s.descriptions?.total || '0';
+
+    // Top calculators
+    const tc = document.getElementById('top-calcs');
+    if (!s.topCalculators?.length) { tc.innerHTML = '<div class="empty"><div class="empty-icon">📊</div><div class="empty-text">No data yet.<br>Users ne calculators use nahi kiye abhi.</div></div>'; }
+    else {
+      const max = s.topCalculators[0]?.total || 1;
+      tc.innerHTML = s.topCalculators.map((c,i) => `
+        <div class="top-calc-item">
+          <div class="rank">${i+1}</div>
+          <div class="calc-name-col">
+            <div style="font-size:.73rem;font-weight:600">${c.name||c._id}</div>
+            <div class="mini-bar" style="width:${Math.max(10,c.total/max*100)}%"></div>
+          </div>
+          <div class="calc-count">${c.total}</div>
+        </div>`).join('');
+    }
+
+    // Recent users from analytics
+    const ad = await api('/admin/analytics?days=30');
+    if (ad.success && ad.analytics?.recentUsers) {
+      document.getElementById('recent-users').innerHTML = ad.analytics.recentUsers.map(u => `
+        <div style="display:flex;align-items:center;gap:.5rem;padding:.3rem 0">
+          <div style="width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,var(--acc),var(--acc2));display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:800;font-family:'Syne',sans-serif;flex-shrink:0">${(u.name||'?')[0].toUpperCase()}</div>
+          <div style="flex:1;min-width:0"><div style="font-size:.7rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${u.name}</div><div style="font-size:.62rem;color:var(--mu)">${u.email}</div></div>
+          <div style="font-size:.6rem;color:var(--mu)">${fmtDate(u.createdAt)}</div>
+        </div>`).join('');
+    }
+  } catch(e) { toast('Dashboard load failed', 'error'); }
+}
+
+// ─── USERS ───
+async function loadUsers(page=usersPage) {
+  usersPage = page;
+  const search = document.getElementById('user-search').value;
+  const role = document.getElementById('user-role-filter').value;
+  const plan = document.getElementById('user-plan-filter').value;
+  let url = `/admin/users?page=${page}&limit=15`;
+  if (search) url += '&search=' + encodeURIComponent(search);
+  if (role) url += '&role=' + role;
+  if (plan) url += '&plan=' + plan;
+  document.getElementById('users-tbody').innerHTML = '<tr class="loading-row"><td colspan="8"><div class="loader"></div> Loading…</td></tr>';
+  try {
+    const d = await api(url);
+    if (!d.success) { toast('Users load failed', 'error'); return; }
+    const tbody = document.getElementById('users-tbody');
+    if (!d.users?.length) { tbody.innerHTML = '<tr class="loading-row"><td colspan="8">No users found</td></tr>'; return; }
+    tbody.innerHTML = d.users.map(u => `
+      <tr>
+        <td><div style="font-weight:600;font-family:'Syne',sans-serif;font-size:.73rem">${u.name}</div></td>
+        <td style="color:var(--mu)">${u.email}</td>
+        <td><span class="badge badge-${u.role}">${u.role}</span></td>
+        <td><span class="badge badge-${u.plan}">${u.plan}</span></td>
+        <td><span class="badge ${u.isActive?'badge-active':'badge-inactive'}">${u.isActive?'Active':'Banned'}</span></td>
+        <td style="color:var(--mu)">${fmtDate(u.createdAt)}</td>
+        <td style="text-align:center">${u.loginCount||0}</td>
+        <td>
+          <button class="action-btn" onclick="openUserModal('${u._id}','${u.name.replace(/'/g,'`')}','${u.email}','${u.role}','${u.plan}',${u.isActive})" title="Edit">✏️</button>
+        </td>
+      </tr>`).join('');
+    // Pagination
+    const p = d.pagination;
+    document.getElementById('users-pagination-info').textContent = `Showing ${(p.page-1)*p.limit+1}–${Math.min(p.page*p.limit,p.total)} of ${p.total}`;
+    const btns = document.getElementById('users-page-btns');
+    btns.innerHTML = '';
+    for (let i=1; i<=Math.min(p.pages,7); i++) {
+      const b = document.createElement('button');
+      b.className = 'page-btn' + (i===p.page?' active':'');
+      b.textContent = i;
+      b.onclick = () => loadUsers(i);
+      btns.appendChild(b);
+    }
+  } catch(e) { toast('Error loading users', 'error'); }
+}
+
+function openUserModal(id, name, email, role, plan, isActive) {
+  currentUserId = id;
+  document.getElementById('um-name').textContent = name;
+  document.getElementById('um-email').textContent = email;
+  document.getElementById('um-role').value = role;
+  document.getElementById('um-plan').value = plan;
+  document.getElementById('um-status').value = String(isActive);
+  openModal('user-modal');
+}
+
+async function saveUser() {
+  const role = document.getElementById('um-role').value;
+  const plan = document.getElementById('um-plan').value;
+  const isActive = document.getElementById('um-status').value === 'true';
+  try {
+    const d = await api('/admin/users/' + currentUserId, 'PUT', { role, plan, isActive });
+    if (d.success) { toast('User updated ✅', 'success'); closeModal('user-modal'); loadUsers(); }
+    else toast(d.message || 'Update failed', 'error');
+  } catch(e) { toast('Error updating user', 'error'); }
+}
+
+async function deleteUser() {
+  if (!confirm('Is user ko permanently delete karna chahte ho? Yeh action reversible nahi hai.')) return;
+  try {
+    const d = await api('/admin/users/' + currentUserId, 'DELETE');
+    if (d.success) { toast('User deleted', 'warn'); closeModal('user-modal'); loadUsers(); }
+    else toast(d.message || 'Delete failed', 'error');
+  } catch(e) { toast('Error deleting user', 'error'); }
+}
+
+// ─── DESCRIPTIONS ───
+let allDescs = [];
+async function loadDescriptions() {
+  const search = document.getElementById('desc-search').value;
+  const section = document.getElementById('desc-section-filter').value;
+  let url = '/admin/descriptions?';
+  if (search) url += 'search=' + encodeURIComponent(search) + '&';
+  if (section) url += 'section=' + section;
+  document.getElementById('descs-list').innerHTML = '<div class="empty"><div class="loader"></div> Loading…</div>';
+  try {
+    const d = await api(url);
+    allDescs = d.descriptions || [];
+    renderDescriptions(allDescs);
+  } catch(e) { toast('Error loading descriptions', 'error'); }
+}
+
+function renderDescriptions(descs) {
+  const el = document.getElementById('descs-list');
+  if (!descs.length) {
+    el.innerHTML = '<div class="empty"><div class="empty-icon">📝</div><div class="empty-text">Koi description nahi mili.<br>Add karo calculator descriptions!</div></div>';
+    return;
+  }
+  el.innerHTML = descs.map(d => `
+    <div class="desc-card">
+      <div class="desc-info">
+        <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.2rem">
+          <div class="desc-name">${d.calcName}</div>
+          <span class="pill" style="background:${d.isPublished?'rgba(16,185,129,.15)':'rgba(245,158,11,.15)'};color:${d.isPublished?'#10b981':'#f59e0b'}">${d.isPublished?'Live':'Draft'}</span>
+          ${d.section?`<span class="pill" style="background:rgba(124,58,237,.15);color:#a78bfa">${d.section}</span>`:''}
+        </div>
+        <div class="desc-id">${d.calcId}</div>
+        <div class="desc-preview">${d.description||'No description added yet…'}</div>
+      </div>
+      <div class="desc-actions">
+        <button class="btn btn-ghost" onclick="openDescModal('${d._id}')">✏️ Edit</button>
+        <button class="btn btn-red" onclick="deleteDesc('${d._id}')">🗑</button>
+      </div>
+    </div>`).join('');
+}
+
+function openDescModal(id) {
+  currentDescId = id;
+  const desc = id ? allDescs.find(d => d._id === id) : null;
+  document.getElementById('desc-modal-title').textContent = desc ? 'Edit Description — ' + desc.calcName : 'Add Calculator Description';
+  document.getElementById('dm-id').value = desc?.calcId || '';
+  document.getElementById('dm-id').disabled = !!desc;
+  document.getElementById('dm-name').value = desc?.calcName || '';
+  document.getElementById('dm-section').value = desc?.section || '';
+  document.getElementById('dm-published').value = String(desc?.isPublished !== false);
+  document.getElementById('dm-desc').value = desc?.description || '';
+  document.getElementById('dm-formula').value = desc?.formula || '';
+  document.getElementById('dm-howto').value = desc?.howToUse || '';
+  document.getElementById('dm-uses').value = desc?.useCases || '';
+  document.getElementById('dm-tips').value = desc?.tips || '';
+  document.getElementById('dm-examples').value = desc?.examples || '';
+  document.getElementById('dm-tags').value = desc?.tags || '';
+  openModal('desc-modal');
+}
+
+async function saveDescription() {
+  const body = {
+    calcId: document.getElementById('dm-id').value.trim(),
+    calcName: document.getElementById('dm-name').value.trim(),
+    section: document.getElementById('dm-section').value,
+    isPublished: document.getElementById('dm-published').value === 'true',
+    description: document.getElementById('dm-desc').value.trim(),
+    formula: document.getElementById('dm-formula').value.trim(),
+    howToUse: document.getElementById('dm-howto').value.trim(),
+    useCases: document.getElementById('dm-uses').value.trim(),
+    tips: document.getElementById('dm-tips').value.trim(),
+    examples: document.getElementById('dm-examples').value.trim(),
+    tags: document.getElementById('dm-tags').value.trim(),
+  };
+  if (!body.calcId || !body.calcName) { toast('Calculator ID aur Name required hai', 'warn'); return; }
+  try {
+    const d = currentDescId
+      ? await api('/admin/descriptions/' + currentDescId, 'PUT', body)
+      : await api('/admin/descriptions', 'POST', body);
+    if (d.success) { toast(currentDescId ? 'Updated ✅' : 'Added ✅', 'success'); closeModal('desc-modal'); loadDescriptions(); }
+    else toast(d.message || 'Save failed', 'error');
+  } catch(e) { toast('Error saving description', 'error'); }
+}
+
+async function deleteDesc(id) {
+  if (!confirm('Description delete karna chahte ho?')) return;
+  try {
+    const d = await api('/admin/descriptions/' + id, 'DELETE');
+    if (d.success) { toast('Deleted', 'warn'); loadDescriptions(); }
+    else toast(d.message || 'Delete failed', 'error');
+  } catch(e) { toast('Error', 'error'); }
+}
+
+// ─── ANALYTICS ───
+async function loadAnalytics() {
+  try {
+    const d = await api('/admin/analytics?days=30');
+    if (!d.success) return;
+    const an = d.analytics;
+
+    // Daily usage bar chart
+    const daily = an.daily || [];
+    const maxD = Math.max(...daily.map(x => x.total), 1);
+    document.getElementById('daily-bars').innerHTML = daily.length
+      ? daily.slice(-20).map(x => `
+          <div class="bar-col">
+            <div class="bar-fill" style="height:${Math.max(2, x.total/maxD*90)}px" title="${x._id}: ${x.total}"></div>
+            <div class="bar-lbl">${x._id?.slice(5)||x._id}</div>
+          </div>`).join('')
+      : '<div class="empty" style="width:100%"><div class="empty-icon">📊</div><div class="empty-text">No analytics data yet</div></div>';
+
+    // By section
+    const sections = an.bySection || [];
+    const maxS = Math.max(...sections.map(x => x.total), 1);
+    document.getElementById('section-bars').innerHTML = sections.length
+      ? sections.slice(0,10).map(x => `
+          <div class="section-bar-item">
+            <div class="section-bar-name">${x._id||'Unknown'}</div>
+            <div class="section-bar-track"><div class="section-bar-fill" style="width:${Math.max(2,x.total/maxS*100)}%"></div></div>
+            <div class="section-bar-val">${x.total}</div>
+          </div>`).join('')
+      : '<div class="empty"><div class="empty-text">No data</div></div>';
+
+    // Recent users
+    const ru = an.recentUsers || [];
+    document.getElementById('analytics-users').innerHTML = ru.map(u => `
+      <tr>
+        <td style="font-weight:600;font-family:'Syne',sans-serif">${u.name}</td>
+        <td style="color:var(--mu)">${u.email}</td>
+        <td><span class="badge badge-${u.role}">${u.role}</span></td>
+        <td><span class="badge badge-${u.plan}">${u.plan}</span></td>
+        <td style="color:var(--mu)">${fmtDate(u.createdAt)}</td>
+      </tr>`).join('') || '<tr><td colspan="5" style="text-align:center;color:var(--mu);padding:1.5rem">No data</td></tr>';
+  } catch(e) { toast('Analytics load failed', 'error'); }
+}
+
+// Close modals on background click
+document.querySelectorAll('.modal-bg').forEach(m => m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); }));
+</script>
+</body>
+</html>
