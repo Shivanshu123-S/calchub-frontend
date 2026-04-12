@@ -1,0 +1,2251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>CalcHub Admin Panel v2.0</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#08080f;--sf:#0d0d1a;--card:#111120;--card2:#161628;
+  --b1:#1c1c35;--b2:#232340;--tx:#e8e8ff;--mu:#6666aa;
+  --acc:#7c3aed;--acc2:#059669;--acc3:#dc2626;--acc4:#d97706;
+  --green:#10b981;--red:#ef4444;--yellow:#f59e0b;--blue:#3b82f6;
+  --orange:#f97316;--pink:#ec4899;--r:10px;
+}
+body{background:var(--bg);color:var(--tx);font-family:'JetBrains Mono',monospace;min-height:100vh;display:flex;flex-direction:column}
+
+/* ── LOGIN ── */
+#login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;background:radial-gradient(ellipse at 50% 0%,rgba(124,58,237,.15),transparent 70%)}
+.login-box{background:var(--card);border:1px solid var(--b1);border-radius:20px;padding:2.5rem;width:100%;max-width:400px;box-shadow:0 32px 80px rgba(0,0,0,.7)}
+.login-logo{font-family:'Syne',sans-serif;font-size:1.6rem;font-weight:800;background:linear-gradient(135deg,#7c3aed,#10b981);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:.25rem}
+.login-sub{font-size:.72rem;color:var(--mu);margin-bottom:2rem;font-family:'Syne',sans-serif}
+.inp{width:100%;padding:.75rem 1rem;background:var(--bg);border:1px solid var(--b1);border-radius:8px;color:var(--tx);font-family:'JetBrains Mono',monospace;font-size:.82rem;outline:none;transition:border .15s;margin-bottom:.75rem;display:block}
+.inp:focus{border-color:var(--acc);box-shadow:0 0 0 3px rgba(124,58,237,.12)}
+.btn{display:inline-flex;align-items:center;gap:.4rem;padding:.65rem 1.2rem;border:none;border-radius:8px;font-family:'Syne',sans-serif;font-weight:700;font-size:.78rem;cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn-acc{background:var(--acc);color:#fff}
+.btn-acc:hover{filter:brightness(1.15);transform:translateY(-1px)}
+.btn-green{background:var(--green);color:#fff}
+.btn-green:hover{filter:brightness(1.1)}
+.btn-red{background:var(--red);color:#fff}
+.btn-red:hover{filter:brightness(1.1)}
+.btn-yellow{background:var(--yellow);color:#000}
+.btn-blue{background:var(--blue);color:#fff}
+.btn-orange{background:var(--orange);color:#fff}
+.btn-ghost{background:var(--card);border:1px solid var(--b1);color:var(--mu)}
+.btn-ghost:hover{color:var(--tx);border-color:var(--mu)}
+.btn-full{width:100%;justify-content:center}
+.btn-sm{padding:.38rem .75rem;font-size:.7rem}
+.err-box{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);color:#f87171;border-radius:8px;padding:.5rem .8rem;font-size:.72rem;margin-bottom:.75rem;display:none}
+.err-box.on{display:block}
+
+/* ── APP LAYOUT ── */
+#app{display:none;height:100vh;overflow:hidden}
+#app.show{display:flex}
+
+/* ── SIDEBAR ── */
+aside{width:230px;min-width:230px;background:var(--sf);border-right:1px solid var(--b1);display:flex;flex-direction:column;overflow-y:auto;transition:width .2s}
+aside.collapsed{width:60px;min-width:60px}
+.sidebar-logo{padding:1.25rem 1rem;border-bottom:1px solid var(--b1);display:flex;align-items:center;gap:.75rem}
+.sidebar-logo .brand{font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;background:linear-gradient(135deg,#7c3aed,#10b981);-webkit-background-clip:text;-webkit-text-fill-color:transparent;white-space:nowrap}
+.collapse-btn{margin-left:auto;background:none;border:none;color:var(--mu);cursor:pointer;font-size:.9rem;flex-shrink:0}
+nav{flex:1;padding:.5rem 0}
+.nav-section{padding:.4rem 1rem .2rem;font-size:.58rem;color:var(--mu);text-transform:uppercase;letter-spacing:.08em;font-family:'Syne',sans-serif;white-space:nowrap;overflow:hidden}
+.nav-item{display:flex;align-items:center;gap:.65rem;padding:.6rem 1rem;font-size:.75rem;color:var(--mu);cursor:pointer;transition:all .15s;border-left:3px solid transparent;position:relative}
+.nav-item:hover{color:var(--tx);background:rgba(255,255,255,.03)}
+.nav-item.active{color:#a78bfa;background:rgba(124,58,237,.1);border-left-color:var(--acc)}
+.nav-item .nav-icon{font-size:.9rem;flex-shrink:0;width:18px;text-align:center}
+.nav-item .nav-lbl{white-space:nowrap;overflow:hidden}
+.nav-badge{margin-left:auto;background:var(--acc);color:#fff;font-size:.55rem;padding:.1rem .4rem;border-radius:10px;font-family:'Syne',sans-serif;font-weight:800;flex-shrink:0}
+.sidebar-footer{padding:1rem;border-top:1px solid var(--b1)}
+.admin-info{display:flex;align-items:center;gap:.6rem}
+.admin-av{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#10b981);display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:800;flex-shrink:0}
+.admin-name{font-size:.72rem;font-family:'Syne',sans-serif;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.admin-role{font-size:.6rem;color:var(--mu)}
+
+/* ── MAIN CONTENT ── */
+main{flex:1;overflow-y:auto;background:var(--bg)}
+.top-bar{background:var(--sf);border-bottom:1px solid var(--b1);padding:.75rem 1.5rem;display:flex;align-items:center;gap:1rem;position:sticky;top:0;z-index:50}
+.page-title{font-family:'Syne',sans-serif;font-weight:800;font-size:1rem;flex:1}
+.top-bar-actions{display:flex;gap:.5rem;align-items:center}
+.search-bar{display:flex;align-items:center;gap:.5rem;background:var(--card);border:1px solid var(--b1);border-radius:8px;padding:.4rem .8rem}
+.search-bar input{background:none;border:none;color:var(--tx);font-family:'JetBrains Mono',monospace;font-size:.78rem;outline:none;width:180px}
+.content{padding:1.5rem}
+
+/* ── STAT CARDS ── */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:1rem;margin-bottom:1.5rem}
+.stat-card{background:var(--card);border:1px solid var(--b1);border-radius:12px;padding:1.25rem;position:relative;overflow:hidden;transition:transform .15s}
+.stat-card:hover{transform:translateY(-2px)}
+.stat-card::before{content:'';position:absolute;top:0;right:0;width:60px;height:60px;border-radius:50%;opacity:.08;transform:translate(20px,-20px)}
+.stat-card.purple::before{background:#7c3aed}
+.stat-card.green::before{background:#10b981}
+.stat-card.blue::before{background:#3b82f6}
+.stat-card.orange::before{background:#f97316}
+.stat-card.red::before{background:#ef4444}
+.stat-card.yellow::before{background:#f59e0b}
+.stat-label{font-size:.68rem;color:var(--mu);font-family:'Syne',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.5rem}
+.stat-value{font-size:1.8rem;font-weight:800;font-family:'JetBrains Mono',monospace;line-height:1}
+.stat-sub{font-size:.65rem;color:var(--mu);margin-top:.3rem}
+.stat-icon{position:absolute;top:1rem;right:1rem;font-size:1.4rem;opacity:.5}
+.stat-trend{display:inline-flex;align-items:center;gap:.2rem;font-size:.65rem;padding:.15rem .4rem;border-radius:6px;margin-top:.4rem}
+.trend-up{background:rgba(16,185,129,.15);color:#10b981}
+.trend-down{background:rgba(239,68,68,.15);color:#ef4444}
+
+/* ── SECTION ── */
+.section{display:none}
+.section.active{display:block}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--b1);border-radius:12px;margin-bottom:1.25rem}
+.card-header{padding:1rem 1.25rem;border-bottom:1px solid var(--b1);display:flex;align-items:center;justify-content:space-between;gap:.75rem}
+.card-title{font-family:'Syne',sans-serif;font-weight:800;font-size:.88rem;display:flex;align-items:center;gap:.5rem}
+.card-body{padding:1.25rem}
+
+/* ── TABLE ── */
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.75rem}
+th{text-align:left;padding:.6rem 1rem;color:var(--mu);font-family:'Syne',sans-serif;font-weight:700;font-size:.68rem;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--b1);white-space:nowrap}
+td{padding:.65rem 1rem;border-bottom:1px solid rgba(255,255,255,.04);vertical-align:middle}
+tr:hover td{background:rgba(255,255,255,.02)}
+tr:last-child td{border-bottom:none}
+
+/* ── BADGES ── */
+.badge{display:inline-flex;align-items:center;padding:.18rem .55rem;border-radius:20px;font-size:.62rem;font-family:'Syne',sans-serif;font-weight:800;white-space:nowrap}
+.badge-purple{background:rgba(124,58,237,.15);color:#a78bfa;border:1px solid rgba(124,58,237,.25)}
+.badge-green{background:rgba(16,185,129,.15);color:#10b981;border:1px solid rgba(16,185,129,.25)}
+.badge-red{background:rgba(239,68,68,.15);color:#ef4444;border:1px solid rgba(239,68,68,.25)}
+.badge-yellow{background:rgba(245,158,11,.15);color:#f59e0b;border:1px solid rgba(245,158,11,.25)}
+.badge-blue{background:rgba(59,130,246,.15);color:#60a5fa;border:1px solid rgba(59,130,246,.25)}
+.badge-orange{background:rgba(249,115,22,.15);color:#fb923c;border:1px solid rgba(249,115,22,.25)}
+.badge-gray{background:rgba(100,100,150,.15);color:var(--mu)}
+
+/* ── MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);z-index:999;display:none;align-items:center;justify-content:center;padding:1rem}
+.modal-overlay.on{display:flex}
+.modal-box{background:var(--card);border:1px solid var(--b1);border-radius:16px;padding:1.75rem;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;animation:slideUp .2s ease}
+@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+.modal-title{font-family:'Syne',sans-serif;font-weight:800;font-size:1rem;margin-bottom:1.25rem;display:flex;justify-content:space-between;align-items:center}
+.modal-close{background:var(--card2);border:1px solid var(--b1);color:var(--mu);border-radius:6px;width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.85rem}
+.modal-close:hover{color:var(--tx)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
+label{display:block;font-size:.7rem;color:var(--mu);margin-bottom:.3rem;font-family:'Syne',sans-serif;font-weight:700}
+select.inp{appearance:none}
+textarea.inp{resize:vertical;min-height:80px}
+
+/* ── TOAST ── */
+#toast-wrap{position:fixed;bottom:1.5rem;right:1.5rem;z-index:9999;display:flex;flex-direction:column-reverse;gap:.4rem}
+.toast{background:var(--card);border:1px solid var(--b1);border-radius:10px;padding:.6rem 1rem;font-size:.75rem;font-family:'Syne',sans-serif;font-weight:700;display:flex;align-items:center;gap:.5rem;box-shadow:0 8px 24px rgba(0,0,0,.4);animation:tIn .25s ease}
+@keyframes tIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:none}}
+.toast.out{animation:tOut .2s ease forwards}
+@keyframes tOut{to{opacity:0;transform:translateX(20px)}}
+
+/* ── PROGRESS BAR ── */
+.progress-wrap{background:var(--b1);border-radius:4px;height:6px;overflow:hidden}
+.progress-fill{height:100%;border-radius:4px;transition:width .5s ease}
+
+/* ── CHARTS ── */
+.mini-bar-wrap{display:flex;flex-direction:column;gap:.5rem}
+.mini-bar-item{display:flex;align-items:center;gap:.75rem}
+.mini-bar-label{font-size:.7rem;color:var(--mu);width:100px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mini-bar{flex:1;background:var(--b1);border-radius:4px;height:8px;overflow:hidden}
+.mini-bar-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--acc),#10b981)}
+.mini-bar-val{font-size:.68rem;color:var(--tx);width:35px;text-align:right;flex-shrink:0}
+
+/* ── EMPTY STATE ── */
+.empty{text-align:center;padding:3rem;color:var(--mu)}
+.empty-icon{font-size:2.5rem;margin-bottom:.75rem;opacity:.4}
+.empty-text{font-size:.82rem;font-family:'Syne',sans-serif;font-weight:700}
+
+/* ── PAGINATION ── */
+.pagination{display:flex;align-items:center;gap:.4rem;margin-top:1rem;justify-content:flex-end}
+.page-btn{padding:.35rem .65rem;border-radius:6px;font-size:.72rem;cursor:pointer;background:var(--card);border:1px solid var(--b1);color:var(--mu);font-family:'Syne',sans-serif}
+.page-btn:hover,.page-btn.active{background:var(--acc);border-color:var(--acc);color:#fff}
+.page-info{font-size:.7rem;color:var(--mu);padding:0 .5rem}
+
+/* ── FILTERS ── */
+.filter-bar{display:flex;gap:.6rem;flex-wrap:wrap;margin-bottom:1rem;align-items:center}
+.filter-bar .inp{margin-bottom:0;width:auto}
+
+/* ── ANNOUNCEMENT ── */
+.announce-card{background:linear-gradient(135deg,rgba(124,58,237,.12),rgba(16,185,129,.08));border:1px solid rgba(124,58,237,.25);border-radius:12px;padding:1.25rem;margin-bottom:1rem}
+
+/* ── ACTIVITY FEED ── */
+.activity-item{display:flex;align-items:flex-start;gap:.75rem;padding:.75rem 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.activity-item:last-child{border-bottom:none}
+.activity-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:.3rem}
+.activity-content{flex:1}
+.activity-text{font-size:.75rem;line-height:1.5}
+.activity-time{font-size:.62rem;color:var(--mu);margin-top:.15rem}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+  aside{width:60px;min-width:60px}
+  .nav-lbl,.nav-section,.sidebar-logo .brand,.admin-name,.admin-role{display:none}
+  .nav-badge{display:none}
+  .content{padding:1rem}
+  .stat-grid{grid-template-columns:1fr 1fr}
+  .form-row{grid-template-columns:1fr}
+}
+
+/* ── SPECIAL ── */
+.online-dot{width:8px;height:8px;background:#10b981;border-radius:50%;display:inline-block;box-shadow:0 0 6px #10b981;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.kbd{background:var(--b1);border:1px solid var(--b2);border-radius:4px;padding:.1rem .35rem;font-size:.62rem;color:var(--mu)}
+.copy-btn{cursor:pointer;color:var(--mu);font-size:.72rem;padding:.2rem .4rem;border-radius:4px;border:1px solid var(--b1);background:var(--card);transition:.15s}
+.copy-btn:hover{color:var(--tx);border-color:var(--mu)}
+.divider{height:1px;background:var(--b1);margin:1rem 0}
+.info-row{display:flex;justify-content:space-between;align-items:center;padding:.5rem 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:.75rem}
+.info-row:last-child{border:none}
+.info-key{color:var(--mu)}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem}
+@media(max-width:900px){.two-col{grid-template-columns:1fr}}
+
+/* ── ADMIN NEW FEATURES CSS ── */
+.checkbox-cell{width:36px}
+.cb-all,.cb-row{width:16px;height:16px;cursor:pointer;accent-color:var(--acc)}
+.bulk-bar{background:linear-gradient(135deg,rgba(124,58,237,.15),rgba(5,150,105,.1));border:1px solid rgba(124,58,237,.25);border-radius:10px;padding:.75rem 1rem;display:none;align-items:center;gap:.75rem;flex-wrap:wrap;margin-bottom:.75rem}
+.bulk-bar.on{display:flex}
+.bulk-count{font-family:'Syne',sans-serif;font-weight:800;font-size:.82rem;color:#a78bfa}
+.star-rating{display:flex;gap:.15rem;font-size:1rem}
+.star-bar-row{display:flex;align-items:center;gap:.65rem;margin-bottom:.35rem}
+.star-bar-label{font-size:.7rem;color:var(--mu);width:20px;text-align:right}
+.star-bar{flex:1;background:var(--b1);border-radius:4px;height:8px;overflow:hidden}
+.star-bar-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,#f59e0b,#f97316)}
+.star-bar-count{font-size:.68rem;color:var(--mu);width:28px}
+.img-preview{width:100%;max-height:160px;object-fit:cover;border-radius:8px;border:1px solid var(--b1);display:none;margin-top:.5rem}
+.img-preview.on{display:block}
+.img-gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:.75rem;margin-top:.75rem}
+.gallery-item{background:var(--card);border:1px solid var(--b1);border-radius:10px;overflow:hidden;position:relative}
+.gallery-item img{width:100%;height:100px;object-fit:cover}
+.gallery-item-info{padding:.5rem .65rem}
+.gallery-item-actions{display:flex;gap:.35rem;padding:.35rem .65rem .5rem}
+.gallery-active-badge{position:absolute;top:.35rem;left:.35rem;background:var(--green);color:#fff;font-size:.58rem;font-family:'Syne',sans-serif;font-weight:800;padding:.12rem .4rem;border-radius:6px}
+.notif-hist-item{padding:.65rem 1rem;border-bottom:1px solid rgba(255,255,255,.04);display:flex;align-items:flex-start;justify-content:space-between;gap:.75rem}
+.notif-hist-content{flex:1}
+.notif-hist-title{font-size:.78rem;font-family:'Syne',sans-serif;font-weight:700;margin-bottom:.18rem}
+.notif-hist-body{font-size:.7rem;color:var(--mu)}
+.notif-hist-meta{font-size:.62rem;color:var(--mu);margin-top:.18rem}
+.rev-admin-card{background:var(--card);border:1px solid var(--b1);border-radius:10px;padding:1rem;margin-bottom:.65rem}
+.rev-admin-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem}
+.rev-admin-rating{display:flex;gap:.1rem;font-size:.85rem}
+.rev-pending{border-left:3px solid var(--yellow)}
+.tab-bar{display:flex;gap:.35rem;background:var(--card);border-radius:10px;padding:.28rem;margin-bottom:1rem}
+.tab-btn{flex:1;padding:.45rem;border:none;background:none;border-radius:8px;font-family:'Syne',sans-serif;font-weight:700;font-size:.76rem;cursor:pointer;color:var(--mu);transition:.15s;text-align:center}
+.tab-btn.on{background:var(--acc);color:#fff}
+.tab-content{display:none}.tab-content.on{display:block}
+
+</style>
+</head>
+<body>
+<div id="toast-wrap"></div>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">CalcHub</div>
+    <div class="login-sub">Admin Panel v2.0 — Authorized Access Only</div>
+    <div class="err-box" id="login-err"></div>
+    <input class="inp" type="email" id="l-email" placeholder="Admin email" autocomplete="email"/>
+    <input class="inp" type="password" id="l-pw" placeholder="Password" autocomplete="current-password"/>
+    <button class="btn btn-acc btn-full" onclick="doAdminLogin()" id="login-btn">🔐 Login to Admin Panel</button>
+    <p style="font-size:.65rem;color:var(--mu);text-align:center;margin-top:1rem">Unauthorized access is monitored and logged.</p>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app">
+  <!-- SIDEBAR -->
+  <aside id="sidebar">
+    <div class="sidebar-logo">
+      <span class="brand">⚡ CalcHub</span>
+      <button class="collapse-btn" onclick="toggleSidebar()" title="Toggle sidebar">☰</button>
+    </div>
+    <nav>
+      <div class="nav-section">Main</div>
+      <div class="nav-item active" onclick="showSection('dashboard')">
+        <span class="nav-icon">📊</span><span class="nav-lbl">Dashboard</span>
+      </div>
+      <div class="nav-item" onclick="showSection('analytics')">
+        <span class="nav-icon">📈</span><span class="nav-lbl">Analytics</span>
+      </div>
+
+      <div class="nav-section">Management</div>
+      <div class="nav-item" onclick="showSection('users')">
+        <span class="nav-icon">👥</span><span class="nav-lbl">Users</span>
+        <span class="nav-badge" id="users-count-badge">—</span>
+      </div>
+      <div class="nav-item" onclick="showSection('descriptions')">
+        <span class="nav-icon">📝</span><span class="nav-lbl">Calc Descriptions</span>
+      </div>
+      <div class="nav-item" onclick="showSection('calculations')">
+        <span class="nav-icon">🧮</span><span class="nav-lbl">Saved Calcs</span>
+      </div>
+
+      <div class="nav-section">Finance</div>
+      <div class="nav-item" onclick="showSection('revenue')">
+        <span class="nav-icon">💰</span><span class="nav-lbl">Revenue</span>
+      </div>
+      <div class="nav-item" onclick="showSection('plans')">
+        <span class="nav-icon">⚡</span><span class="nav-lbl">Plans Manager</span>
+      </div>
+
+      <div class="nav-section">Content</div>
+      <div class="nav-item" onclick="showSection('reviews')">
+        <span class="nav-icon">⭐</span><span class="nav-lbl">Reviews</span>
+        <span class="nav-badge" id="rev-pending-badge">0</span>
+      </div>
+      <div class="nav-item" onclick="showSection('banners')">
+        <span class="nav-icon">🖼️</span><span class="nav-lbl">Image Banners</span>
+      </div>
+      <div class="nav-item" onclick="showSection('notifications')">
+        <span class="nav-icon">🔔</span><span class="nav-lbl">Push Notifications</span>
+      </div>
+      <div class="nav-section">Tools</div>
+      <div class="nav-item" onclick="showSection('announcements')">
+        <span class="nav-icon">📢</span><span class="nav-lbl">Announcements</span>
+      </div>
+      <div class="nav-item" onclick="showSection('export')">
+        <span class="nav-icon">📤</span><span class="nav-lbl">Export Data</span>
+      </div>
+      <div class="nav-item" onclick="showSection('settings')">
+        <span class="nav-icon">⚙️</span><span class="nav-lbl">Settings</span>
+      </div>
+      <div class="nav-item" onclick="showSection('logs')">
+        <span class="nav-icon">🔍</span><span class="nav-lbl">Activity Logs</span>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="admin-info">
+        <div class="admin-av" id="admin-av">A</div>
+        <div>
+          <div class="admin-name" id="admin-name">Admin</div>
+          <div class="admin-role">Super Admin <span class="online-dot"></span></div>
+        </div>
+      </div>
+      <button class="btn btn-ghost btn-full" style="margin-top:.75rem;font-size:.7rem" onclick="doLogout()">🚪 Logout</button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main>
+    <!-- TOP BAR -->
+    <div class="top-bar">
+      <div class="page-title" id="page-title">📊 Dashboard</div>
+      <div class="top-bar-actions">
+        <div class="search-bar">
+          <span>🔍</span>
+          <input type="text" placeholder="Quick search..." id="global-search" onkeyup="handleGlobalSearch(event)"/>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="refreshCurrent()">🔄 Refresh</button>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- ══ DASHBOARD ══ -->
+      <div class="section active" id="sec-dashboard">
+        <div class="stat-grid" id="dash-stats">
+          <div class="stat-card purple"><div class="stat-icon">👥</div><div class="stat-label">Total Users</div><div class="stat-value" id="s-total">—</div><div class="stat-sub" id="s-today">Loading...</div></div>
+          <div class="stat-card green"><div class="stat-icon">🧮</div><div class="stat-label">Saved Calcs</div><div class="stat-value" id="s-calcs">—</div><div class="stat-sub" id="s-avg">avg per user</div></div>
+          <div class="stat-card blue"><div class="stat-icon">⚡</div><div class="stat-label">Premium Users</div><div class="stat-value" id="s-premium">—</div><div class="stat-sub" id="s-free-pct">of total</div></div>
+          <div class="stat-card orange"><div class="stat-icon">📊</div><div class="stat-label">This Month</div><div class="stat-value" id="s-month">—</div><div class="stat-sub">new signups</div></div>
+          <div class="stat-card yellow"><div class="stat-icon">📝</div><div class="stat-label">Descriptions</div><div class="stat-value" id="s-descs">—</div><div class="stat-sub">calculator entries</div></div>
+          <div class="stat-card red"><div class="stat-icon">💰</div><div class="stat-label">Revenue</div><div class="stat-value" id="s-rev">₹0</div><div class="stat-sub">total collected</div></div>
+        </div>
+
+        <div class="two-col">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">🔥 Top Calculators</div>
+              <button class="btn btn-ghost btn-sm" onclick="showSection('analytics')">View All</button>
+            </div>
+            <div class="card-body">
+              <div class="mini-bar-wrap" id="top-calcs-bars">
+                <div style="color:var(--mu);font-size:.75rem">Loading...</div>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">🕐 Recent Activity</div>
+              <button class="btn btn-ghost btn-sm" onclick="showSection('logs')">All Logs</button>
+            </div>
+            <div class="card-body" id="recent-activity">
+              <div style="color:var(--mu);font-size:.75rem">Loading...</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="two-col">
+          <div class="card">
+            <div class="card-header"><div class="card-title">👥 Recent Users</div></div>
+            <div class="tbl-wrap">
+              <table>
+                <thead><tr><th>Name</th><th>Email</th><th>Plan</th><th>Joined</th></tr></thead>
+                <tbody id="recent-users-tbl"><tr><td colspan="4" style="color:var(--mu);text-align:center;padding:1rem">Loading...</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><div class="card-title">📊 Usage by Category</div></div>
+            <div class="card-body">
+              <div class="mini-bar-wrap" id="category-bars">
+                <div style="color:var(--mu);font-size:.75rem">Loading...</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ USERS ══ -->
+      <div class="section" id="sec-users">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">👥 User Management</div>
+            <div style="display:flex;gap:.5rem">
+              <button class="btn btn-green btn-sm" onclick="openAddUserModal()">+ Add User</button>
+              <button class="btn btn-ghost btn-sm" onclick="exportUsers()">📤 Export CSV</button>
+            </div>
+          </div>
+          <div class="card-body" style="padding-bottom:0">
+            <div class="bulk-bar" id="bulk-bar">
+            <span class="bulk-count" id="bulk-count">0 selected</span>
+            <button class="btn btn-orange btn-sm" onclick="bulkAction('premium')">⚡ Make Premium</button>
+            <button class="btn btn-red btn-sm" onclick="bulkAction('ban')">🚫 Ban Users</button>
+            <button class="btn btn-green btn-sm" onclick="bulkAction('activate')">✅ Activate</button>
+            <button class="btn btn-ghost btn-sm" onclick="clearBulkSelection()">✕ Clear</button>
+          </div>
+          <div class="filter-bar">
+              <input class="inp" type="text" placeholder="Search name or email..." id="user-search" style="width:220px" onkeyup="filterUsers()"/>
+              <select class="inp" id="user-role-filter" onchange="loadUsers()">
+                <option value="">All Roles</option>
+                <option value="user">User</option>
+                <option value="premium">Premium</option>
+                <option value="admin">Admin</option>
+              </select>
+              <select class="inp" id="user-plan-filter" onchange="loadUsers()">
+                <option value="">All Plans</option>
+                <option value="free">Free</option>
+                <option value="pro">Pro</option>
+                <option value="lifetime">Lifetime</option>
+              </select>
+            </div>
+          </div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th class="checkbox-cell"><input type="checkbox" class="cb-all" id="cb-all" onchange="toggleAllCheckboxes()"/></th><th>#</th><th>Name</th><th>Email</th><th>Role</th><th>Plan</th><th>Saves</th><th>Joined</th><th>Status</th><th>Actions</th></tr></thead>
+              <tbody id="users-tbl"><tr><td colspan="9" style="color:var(--mu);text-align:center;padding:2rem">Loading...</td></tr></tbody>
+            </table>
+          </div>
+          <div style="padding:1rem" id="users-pagination"></div>
+        </div>
+      </div>
+
+      <!-- ══ DESCRIPTIONS ══ -->
+      <div class="section" id="sec-descriptions">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">📝 Calculator Descriptions</div>
+            <div style="display:flex;gap:.5rem">
+              <button class="btn btn-acc btn-sm" onclick="openDescModal(null)">+ Add New</button>
+              <button class="btn btn-ghost btn-sm" onclick="loadDescriptions()">🔄 Refresh</button>
+            </div>
+          </div>
+          <div class="card-body" style="padding-bottom:0">
+            <div class="filter-bar">
+              <input class="inp" type="text" placeholder="Search calculator..." id="desc-search" onkeyup="searchDescs()" style="width:220px"/>
+              <select class="inp" id="desc-section-filter" onchange="loadDescriptions()" style="width:160px">
+                <option value="">All Sections</option>
+                <option>Finance</option><option>Math</option><option>Physics</option>
+                <option>Chemistry</option><option>Health</option><option>Engineering</option>
+                <option>Education</option><option>Agriculture</option>
+              </select>
+            </div>
+          </div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>Calc ID</th><th>Name</th><th>Section</th><th>Description</th><th>Status</th><th>Actions</th></tr></thead>
+              <tbody id="desc-tbl"><tr><td colspan="6" style="color:var(--mu);text-align:center;padding:2rem">Loading...</td></tr></tbody>
+            </table>
+          </div>
+          <div style="padding:1rem" id="desc-pagination"></div>
+        </div>
+      </div>
+
+      <!-- ══ CALCULATIONS ══ -->
+      <div class="section" id="sec-calculations">
+        <div class="stat-grid" style="grid-template-columns:repeat(3,1fr)">
+          <div class="stat-card green"><div class="stat-label">Total Saved</div><div class="stat-value" id="calc-total">—</div></div>
+          <div class="stat-card blue"><div class="stat-label">Avg per User</div><div class="stat-value" id="calc-avg">—</div></div>
+          <div class="stat-card purple"><div class="stat-label">Today</div><div class="stat-value" id="calc-today">—</div></div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">🧮 Saved Calculations Overview</div>
+            <button class="btn btn-ghost btn-sm" onclick="loadCalculations()">🔄 Refresh</button>
+          </div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>User</th><th>Calculator</th><th>Category</th><th>Result</th><th>Saved On</th></tr></thead>
+              <tbody id="calcs-tbl"><tr><td colspan="5" style="color:var(--mu);text-align:center;padding:2rem">Loading...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ ANALYTICS ══ -->
+      <div class="section" id="sec-analytics">
+        <div class="filter-bar" style="margin-bottom:1rem">
+          <label style="margin:0;color:var(--mu)">Period:</label>
+          <select class="inp" id="analytics-days" onchange="loadAnalytics()" style="width:130px">
+            <option value="7">Last 7 days</option>
+            <option value="30" selected>Last 30 days</option>
+            <option value="60">Last 60 days</option>
+            <option value="90">Last 90 days</option>
+          </select>
+        </div>
+        <div class="two-col">
+          <div class="card">
+            <div class="card-header"><div class="card-title">🔥 Top 10 Calculators</div></div>
+            <div class="card-body">
+              <div class="mini-bar-wrap" id="analytics-top-calcs">Loading...</div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><div class="card-title">📂 By Section</div></div>
+            <div class="card-body">
+              <div class="mini-bar-wrap" id="section-bars">Loading...</div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">👥 Recent Signups</div></div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Plan</th><th>Joined</th></tr></thead>
+              <tbody id="recent-signups-tbl"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ REVENUE ══ -->
+      <div class="section" id="sec-revenue">
+        <div class="stat-grid">
+          <div class="stat-card green"><div class="stat-icon">💰</div><div class="stat-label">Total Revenue</div><div class="stat-value" id="rev-total">₹0</div></div>
+          <div class="stat-card purple"><div class="stat-icon">📊</div><div class="stat-label">Pro Monthly</div><div class="stat-value" id="rev-pro-m">₹0</div><div class="stat-sub" id="rev-pro-m-cnt">0 payments</div></div>
+          <div class="stat-card blue"><div class="stat-icon">📅</div><div class="stat-label">Pro Yearly</div><div class="stat-value" id="rev-pro-y">₹0</div><div class="stat-sub" id="rev-pro-y-cnt">0 payments</div></div>
+          <div class="stat-card orange"><div class="stat-icon">💎</div><div class="stat-label">Lifetime</div><div class="stat-value" id="rev-life">₹0</div><div class="stat-sub" id="rev-life-cnt">0 sales</div></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">💳 Payment History</div><button class="btn btn-ghost btn-sm" onclick="exportRevenue()">📤 Export</button></div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>User</th><th>Plan</th><th>Amount</th><th>Status</th><th>Date</th><th>Payment ID</th></tr></thead>
+              <tbody id="revenue-tbl"><tr><td colspan="6" style="color:var(--mu);text-align:center;padding:2rem">No payments yet</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ PLANS MANAGER ══ -->
+      <div class="section" id="sec-plans">
+        <div class="card">
+          <div class="card-header"><div class="card-title">⚡ Pricing Plans Manager</div></div>
+          <div class="card-body">
+            <p style="font-size:.78rem;color:var(--mu);margin-bottom:1.25rem">Manage pricing plans shown to users on the Pricing page.</p>
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem" id="plans-grid">
+              <div class="card" style="margin:0;padding:1.25rem">
+                <div style="font-family:'Syne',sans-serif;font-weight:800;margin-bottom:.5rem">🆓 Free Plan</div>
+                <div style="font-size:.75rem;color:var(--mu)">Price: ₹0/forever<br>Saves: 50 max</div>
+                <div class="divider"></div>
+                <div style="font-size:.7rem;color:var(--green)">✓ Cannot be disabled</div>
+              </div>
+              <div class="card" style="margin:0;padding:1.25rem">
+                <div style="font-family:'Syne',sans-serif;font-weight:800;margin-bottom:.5rem">⚡ Pro Monthly</div>
+                <div class="info-row"><span class="info-key">Price</span><span>₹99/mo</span></div>
+                <div class="info-row"><span class="info-key">Yearly Price</span><span>₹799/yr</span></div>
+                <div class="info-row"><span class="info-key">Status</span><span class="badge badge-green">Active</span></div>
+                <button class="btn btn-ghost btn-sm btn-full" style="margin-top:.75rem" onclick="toast('Contact developer to update pricing','info')">✏️ Edit</button>
+              </div>
+              <div class="card" style="margin:0;padding:1.25rem">
+                <div style="font-family:'Syne',sans-serif;font-weight:800;margin-bottom:.5rem">💎 Lifetime</div>
+                <div class="info-row"><span class="info-key">Price</span><span>₹1,999 once</span></div>
+                <div class="info-row"><span class="info-key">Original</span><span>₹3,999</span></div>
+                <div class="info-row"><span class="info-key">Status</span><span class="badge badge-green">Active</span></div>
+                <button class="btn btn-ghost btn-sm btn-full" style="margin-top:.75rem" onclick="toast('Contact developer to update pricing','info')">✏️ Edit</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">👑 Manually Grant Plans</div></div>
+          <div class="card-body">
+            <p style="font-size:.78rem;color:var(--mu);margin-bottom:1rem">Manually set a user's plan (for testing or special cases).</p>
+            <div class="form-row">
+              <div><label>User Email</label><input class="inp" type="email" id="grant-email" placeholder="user@example.com" style="margin:0"/></div>
+              <div><label>Plan to Grant</label>
+                <select class="inp" id="grant-plan" style="margin:0">
+                  <option value="free">Free</option>
+                  <option value="pro">Pro</option>
+                  <option value="lifetime">Lifetime</option>
+                </select>
+              </div>
+            </div>
+            <button class="btn btn-acc" style="margin-top:.75rem" onclick="grantPlan()">✅ Grant Plan</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ ANNOUNCEMENTS ══ -->
+      <div class="section" id="sec-announcements">
+        <div class="card">
+          <div class="card-header"><div class="card-title">📢 Site Announcements</div></div>
+          <div class="card-body">
+            <p style="font-size:.78rem;color:var(--mu);margin-bottom:1.25rem">Create announcements that appear as banners on CalcHub frontend for all users.</p>
+            <div style="margin-bottom:1rem">
+              <label>Announcement Text</label>
+              <input class="inp" type="text" id="ann-text" placeholder="e.g. 🎉 New calculators added! Check them out →" style="margin-bottom:.75rem"/>
+              <div class="form-row">
+                <div>
+                  <label>Type</label>
+                  <select class="inp" id="ann-type" style="margin:0">
+                    <option value="info">ℹ️ Info (Blue)</option>
+                    <option value="success">✅ Success (Green)</option>
+                    <option value="warning">⚠️ Warning (Yellow)</option>
+                    <option value="promo">🎉 Promo (Purple)</option>
+                  </select>
+                </div>
+                <div>
+                  <label>Target</label>
+                  <select class="inp" id="ann-target" style="margin:0">
+                    <option value="all">All Users</option>
+                    <option value="free">Free Users Only</option>
+                    <option value="premium">Premium Only</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <button class="btn btn-acc" onclick="createAnnouncement()">📢 Publish Announcement</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">📋 Active Announcements</div></div>
+          <div class="card-body" id="announcements-list">
+            <div class="empty"><div class="empty-icon">📢</div><div class="empty-text">No active announcements</div></div>
+          </div>
+        </div>
+      </div>
+
+      
+<!-- ══ REVIEWS ══ -->
+<div class="section" id="sec-reviews">
+  <div class="stat-grid" style="grid-template-columns:repeat(4,1fr)">
+    <div class="stat-card purple"><div class="stat-icon">⭐</div><div class="stat-label">Total Reviews</div><div class="stat-value" id="rev-total">0</div></div>
+    <div class="stat-card yellow"><div class="stat-icon">📊</div><div class="stat-label">Avg Rating</div><div class="stat-value" id="rev-avg-stat">0.0</div></div>
+    <div class="stat-card green"><div class="stat-icon">✅</div><div class="stat-label">5-Star Reviews</div><div class="stat-value" id="rev-five">0</div></div>
+    <div class="stat-card orange"><div class="stat-icon">⏳</div><div class="stat-label">Pending</div><div class="stat-value" id="rev-pending">0</div></div>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <div class="card-header"><div class="card-title">📊 Rating Distribution</div></div>
+      <div class="card-body" id="rev-dist">Loading...</div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">⏳ Pending Approval</div><button class="btn btn-green btn-sm" onclick="approveAll()">✅ Approve All</button></div>
+      <div class="card-body" id="rev-pending-list">No pending reviews</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">⭐ All Reviews</div>
+      <div style="display:flex;gap:.5rem">
+        <select class="inp" id="rev-filter" onchange="loadReviewsAdmin()" style="width:140px;margin:0">
+          <option value="all">All Reviews</option>
+          <option value="approved">Approved</option>
+          <option value="pending">Pending</option>
+          <option value="5">5 Stars</option>
+          <option value="4">4 Stars</option>
+          <option value="3">3 Stars</option>
+        </select>
+        <button class="btn btn-ghost btn-sm" onclick="loadReviewsAdmin()">Refresh</button>
+      </div>
+    </div>
+    <div class="card-body" id="all-reviews-list">Loading...</div>
+  </div>
+</div>
+
+<!-- ══ IMAGE BANNERS ══ -->
+<div class="section" id="sec-banners">
+  <div class="card">
+    <div class="card-header"><div class="card-title">🖼️ Add Banner</div></div>
+    <div class="card-body">
+      <div style="font-size:.72rem;color:var(--mu);margin-bottom:.85rem;padding:.5rem .75rem;background:rgba(59,130,246,.08);border-radius:8px;border-left:3px solid #3b82f6">
+        💡 <b>2 options:</b> Image URL paste karo <b>ya</b> neeche se ready-made SVG banner select karo (no image needed)
+      </div>
+
+      <!-- Option 1: Image URL -->
+      <div class="form-row">
+        <div>
+          <label>📷 Image URL (optional)</label>
+          <input class="inp" id="banner-url" type="url" placeholder="https://example.com/banner.jpg" style="margin:0" oninput="previewBannerImg()"/>
+        </div>
+        <div>
+          <label>🔗 Click Link (optional)</label>
+          <input class="inp" id="banner-link" type="url" placeholder="https://calchub..." style="margin:0"/>
+        </div>
+      </div>
+
+      <!-- Image preview -->
+      <div id="banner-img-preview-box" style="display:none;margin:.65rem 0;border-radius:10px;overflow:hidden;height:110px;border:1px solid var(--b1)">
+        <img id="banner-preview" src="" alt="Preview" style="width:100%;height:100%;object-fit:cover"/>
+      </div>
+
+      <!-- Title + Desc -->
+      <div class="form-row" style="margin-top:.65rem">
+        <div>
+          <label>📝 Title *</label>
+          <input class="inp" id="banner-title" placeholder="e.g. 🎉 New Feature!" style="margin:0"/>
+        </div>
+        <div>
+          <label>💬 Short Description</label>
+          <input class="inp" id="banner-desc-txt" placeholder="Brief description..." style="margin:0"/>
+        </div>
+      </div>
+
+      <div class="form-row" style="margin-top:.65rem">
+        <div>
+          <label>🏷️ Tag Label</label>
+          <input class="inp" id="banner-tag-txt" placeholder="🆕 New" style="margin:0"/>
+        </div>
+        <div>
+          <label>🎨 OR: Use SVG Preset (no image needed)</label>
+          <select class="inp" id="banner-svg-type" style="margin:0" onchange="fillSvgBannerAdmin()">
+            <option value="">-- Select SVG Preset --</option>
+            <option value="finance">💰 Finance (Orange)</option>
+            <option value="investment">📈 Investment (Purple)</option>
+            <option value="health">💪 Health (Green)</option>
+            <option value="tax">🧾 GST/Tax (Amber)</option>
+            <option value="math">📐 Mathematics (Indigo)</option>
+            <option value="explore">🎯 Explore All (Pink)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- SVG preview -->
+      <div id="svg-banner-preview" style="display:none;margin:.65rem 0;border-radius:10px;overflow:hidden;height:90px;display:none;align-items:center;padding:1rem;gap:1rem">
+        <div id="svg-prev-emoji" style="font-size:2rem">🧮</div>
+        <div><div id="svg-prev-title" style="font-family:'Syne',sans-serif;font-weight:800;color:#fff;font-size:.9rem"></div><div id="svg-prev-desc" style="font-size:.68rem;color:rgba(255,255,255,.8);margin-top:.2rem"></div></div>
+      </div>
+
+      <button class="btn btn-acc" style="margin-top:.85rem;width:100%" onclick="saveBanner()">🖼️ Add Banner to Frontend</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">🗂️ Active Banners</div>
+      <div style="display:flex;gap:.35rem">
+        <button class="btn btn-ghost btn-sm" onclick="loadBanners()">🔄 Refresh</button>
+        <button class="btn btn-red btn-sm" onclick="clearAllBanners()">🗑 Clear All</button>
+      </div>
+    </div>
+    <div class="card-body">
+      <div id="banner-gallery"><div style="color:var(--mu);font-size:.78rem;text-align:center;padding:1rem">No banners. Add one above.</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ NOTIFICATIONS ══ -->
+<div class="section" id="sec-notifications">
+
+  <!-- Push Notification Composer -->
+  <div class="card" style="margin-bottom:1rem">
+    <div class="card-header">
+      <div class="card-title">🔔 Push Notification</div>
+      <div style="font-size:.65rem;color:var(--mu);background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.2);color:#10b981;padding:.2rem .55rem;border-radius:20px">📡 Real-time</div>
+    </div>
+    <div class="card-body">
+      <div style="font-size:.72rem;color:var(--mu);margin-bottom:.85rem;padding:.5rem .75rem;background:rgba(59,130,246,.08);border-radius:8px;border-left:3px solid #3b82f6">
+        💡 Notifications turant users ke notification bell mein appear hote hain — localStorage sync ke zariye
+      </div>
+      <div class="form-row">
+        <div>
+          <label>📢 Title *</label>
+          <input class="inp" id="notif-title" placeholder="e.g. 🎉 New Feature Launch!" style="margin:0" oninput="updateNotifPreview()"/>
+        </div>
+        <div>
+          <label>🏷️ Type</label>
+          <select class="inp" id="notif-type" style="margin:0" onchange="updateNotifPreview()">
+            <option value="info">ℹ️ Info</option>
+            <option value="feature">✨ New Feature</option>
+            <option value="promo">🎉 Promo / Offer</option>
+            <option value="alert">⚠️ Alert</option>
+            <option value="success">✅ Success / Update</option>
+            <option value="calc">🧮 Calculator Update</option>
+          </select>
+        </div>
+      </div>
+      <div style="margin-top:.75rem">
+        <label>💬 Message Body *</label>
+        <textarea class="inp" id="notif-body" placeholder="Notification ka full message..." style="min-height:75px;margin:0;margin-top:.35rem" oninput="updateNotifPreview()"></textarea>
+      </div>
+      <div class="form-row" style="margin-top:.75rem">
+        <div>
+          <label>👥 Target</label>
+          <select class="inp" id="notif-target" style="margin:0">
+            <option value="all">🌍 All Users</option>
+            <option value="free">🆓 Free Users Only</option>
+            <option value="premium">⭐ Premium Users</option>
+          </select>
+        </div>
+        <div>
+          <label>⏰ Schedule</label>
+          <select class="inp" id="notif-schedule" style="margin:0">
+            <option value="now">📤 Send Now</option>
+            <option value="1h">⏱️ In 1 Hour</option>
+            <option value="tomorrow">📅 Tomorrow</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Live Preview -->
+      <div style="margin-top:.85rem">
+        <label style="font-size:.68rem;color:var(--mu);display:block;margin-bottom:.4rem">👁️ Live Preview</label>
+        <div id="notif-preview-card" style="background:var(--bg);border:1px solid var(--b1);border-radius:10px;padding:.75rem;display:flex;gap:.6rem;align-items:flex-start">
+          <div id="notif-prev-icon" style="width:34px;height:34px;border-radius:8px;background:rgba(59,130,246,.15);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0">ℹ️</div>
+          <div style="flex:1">
+            <div id="notif-prev-title" style="font-family:'Syne',sans-serif;font-weight:700;font-size:.75rem;margin-bottom:.18rem">Notification Title</div>
+            <div id="notif-prev-body" style="font-size:.68rem;color:var(--mu)">Message body yahan dikhega...</div>
+            <div style="font-size:.58rem;color:var(--mu);margin-top:.2rem">Just now · CalcHub</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:.5rem;margin-top:.85rem">
+        <button class="btn btn-acc" style="flex:1" onclick="sendNotification()">🔔 Send Notification</button>
+        <button class="btn btn-ghost" onclick="sendTestNotif()">🧪 Test on This Browser</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Email Broadcast -->
+  <div class="card" style="margin-bottom:1rem">
+    <div class="card-header">
+      <div class="card-title">📧 Email Broadcast</div>
+      <div style="font-size:.65rem;padding:.2rem .55rem;border-radius:20px;background:rgba(245,158,11,.1);color:#f59e0b;border:1px solid rgba(245,158,11,.2)">Gmail API</div>
+    </div>
+    <div class="card-body">
+      <div style="font-size:.72rem;color:var(--mu);margin-bottom:.85rem;padding:.5rem .75rem;background:rgba(245,158,11,.08);border-radius:8px;border-left:3px solid #f59e0b">
+        ⚠️ Yeh Gmail MCP se connected hai. Email bhejne ke liye Gmail integration active honi chahiye.
+      </div>
+      <div class="form-row">
+        <div>
+          <label>📧 Subject Line *</label>
+          <input class="inp" id="email-subject" placeholder="e.g. 🎉 New Calculators Added!" style="margin:0"/>
+        </div>
+        <div>
+          <label>👥 Send To</label>
+          <select class="inp" id="email-target" style="margin:0">
+            <option value="all">All Registered Users</option>
+            <option value="free">Free Users Only</option>
+            <option value="premium">Premium Users</option>
+            <option value="custom">Custom Email</option>
+          </select>
+        </div>
+      </div>
+      <div id="email-custom-wrap" style="display:none;margin-top:.65rem">
+        <label>📮 Custom Email(s) — comma separated</label>
+        <input class="inp" id="email-custom" placeholder="user1@gmail.com, user2@gmail.com" style="margin:0;margin-top:.3rem"/>
+      </div>
+      <div style="margin-top:.75rem">
+        <label>📝 Email Body (HTML supported)</label>
+        <textarea class="inp" id="email-body" style="min-height:120px;margin:0;margin-top:.35rem;font-family:'DM Mono',monospace;font-size:.72rem" placeholder="Dear User,
+
+Namaste! CalcHub mein kuch nayi cheezein add ki gayi hain...
+
+👉 Feature 1: New calculators added
+👉 Feature 2: Better UI
+
+Visit: https://calchub-frontend-six.vercel.app
+
+Thanks,
+CalcHub Team"></textarea>
+      </div>
+      <div style="margin-top:.85rem;display:flex;gap:.5rem">
+        <button class="btn btn-acc" style="flex:1" onclick="sendEmailBroadcast()">📧 Send Email</button>
+        <button class="btn btn-ghost" onclick="previewEmailTemplate()">👁️ Preview</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notification History -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">📋 Sent History</div>
+      <div style="display:flex;gap:.35rem">
+        <button class="btn btn-ghost btn-sm" onclick="loadNotifHistory()">🔄</button>
+        <button class="btn btn-red btn-sm" onclick="clearNotifHistory()">🗑️ Clear</button>
+      </div>
+    </div>
+    <div class="card-body" id="notif-history">
+      <div style="color:var(--mu);font-size:.78rem;text-align:center;padding:1rem">No notifications sent yet.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ EXPORT ══ -->
+      <div class="section" id="sec-export">
+        <div class="card">
+          <div class="card-header"><div class="card-title">📤 Export Data</div></div>
+          <div class="card-body">
+            <p style="font-size:.78rem;color:var(--mu);margin-bottom:1.5rem">Download CalcHub data as CSV files for analysis or backup.</p>
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem">
+              <div class="announce-card">
+                <div style="font-family:'Syne',sans-serif;font-weight:800;margin-bottom:.5rem">👥 Users List</div>
+                <div style="font-size:.75rem;color:var(--mu);margin-bottom:1rem">Export all user data including name, email, plan, join date.</div>
+                <button class="btn btn-acc btn-sm" onclick="exportUsers()">📥 Export Users CSV</button>
+              </div>
+              <div class="announce-card">
+                <div style="font-family:'Syne',sans-serif;font-weight:800;margin-bottom:.5rem">💰 Revenue Data</div>
+                <div style="font-size:.75rem;color:var(--mu);margin-bottom:1rem">Export all payment transactions and revenue data.</div>
+                <button class="btn btn-green btn-sm" onclick="exportRevenue()">📥 Export Revenue CSV</button>
+              </div>
+              <div class="announce-card">
+                <div style="font-family:'Syne',sans-serif;font-weight:800;margin-bottom:.5rem">📊 Analytics Data</div>
+                <div style="font-size:.75rem;color:var(--mu);margin-bottom:1rem">Export calculator usage stats and analytics.</div>
+                <button class="btn btn-blue btn-sm" onclick="exportAnalytics()">📥 Export Analytics CSV</button>
+              </div>
+              <div class="announce-card">
+                <div style="font-family:'Syne',sans-serif;font-weight:800;margin-bottom:.5rem">📝 Descriptions</div>
+                <div style="font-size:.75rem;color:var(--mu);margin-bottom:1rem">Export all calculator descriptions as JSON.</div>
+                <button class="btn btn-yellow btn-sm" onclick="exportDescriptions()">📥 Export JSON</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ SETTINGS ══ -->
+      <div class="section" id="sec-settings">
+        <div class="two-col">
+          <div class="card">
+            <div class="card-header"><div class="card-title">⚙️ API Configuration</div></div>
+            <div class="card-body">
+              <label>Backend API URL</label>
+              <div style="display:flex;gap:.5rem;margin-bottom:1rem">
+                <input class="inp" type="text" id="api-url-setting" style="margin:0;flex:1" placeholder="https://calchub-backend.vercel.app/api"/>
+                <button class="btn btn-acc btn-sm" onclick="saveApiUrl()">Save</button>
+              </div>
+              <label>Current Status</label>
+              <div style="display:flex;align-items:center;gap:.5rem;font-size:.75rem">
+                <span class="online-dot" id="api-status-dot"></span>
+                <span id="api-status-text">Checking...</span>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><div class="card-title">🔑 Admin Account</div></div>
+            <div class="card-body">
+              <div class="info-row"><span class="info-key">Name</span><span id="set-admin-name">—</span></div>
+              <div class="info-row"><span class="info-key">Email</span><span id="set-admin-email">—</span></div>
+              <div class="info-row"><span class="info-key">Role</span><span class="badge badge-purple">Admin</span></div>
+              <div class="info-row"><span class="info-key">Plan</span><span id="set-admin-plan">—</span></div>
+              <div class="info-row"><span class="info-key">Login Count</span><span id="set-login-count">—</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">🎨 Admin Panel Info</div></div>
+          <div class="card-body">
+            <div class="info-row"><span class="info-key">Version</span><span class="badge badge-purple">v2.0</span></div>
+            <div class="info-row"><span class="info-key">Backend</span><span>Node.js + Express + MongoDB</span></div>
+            <div class="info-row"><span class="info-key">Frontend</span><span>CalcHub 318+ calculators</span></div>
+            <div class="info-row"><span class="info-key">Payment</span><span>Razorpay</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ LOGS ══ -->
+      <div class="section" id="sec-logs">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">🔍 Activity Logs</div>
+            <button class="btn btn-ghost btn-sm" onclick="clearLogs()">🗑️ Clear Logs</button>
+          </div>
+          <div class="card-body" id="logs-list">
+            <div class="empty"><div class="empty-icon">🔍</div><div class="empty-text">No activity logs yet</div></div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- end content -->
+  </main>
+</div>
+
+<!-- USER MODAL -->
+<div class="modal-overlay" id="user-modal">
+  <div class="modal-box">
+    <div class="modal-title">
+      <span id="user-modal-title">👤 Edit User</span>
+      <div class="modal-close" onclick="closeModal('user-modal')">✕</div>
+    </div>
+    <input type="hidden" id="um-id"/>
+    <div class="form-row">
+      <div><label>Name</label><input class="inp" id="um-name" type="text" style="margin:0"/></div>
+      <div><label>Email</label><input class="inp" id="um-email" type="email" style="margin:0"/></div>
+    </div>
+    <div class="form-row" style="margin-top:.75rem">
+      <div><label>Role</label>
+        <select class="inp" id="um-role" style="margin:0">
+          <option value="user">User</option>
+          <option value="premium">Premium</option>
+          <option value="admin">Admin</option>
+        </select>
+      </div>
+      <div><label>Plan</label>
+        <select class="inp" id="um-plan" style="margin:0">
+          <option value="free">Free</option>
+          <option value="pro">Pro</option>
+          <option value="lifetime">Lifetime</option>
+        </select>
+      </div>
+    </div>
+    <div style="margin-top:.75rem">
+      <label>Status</label>
+      <select class="inp" id="um-active" style="margin:0">
+        <option value="true">Active ✅</option>
+        <option value="false">Blocked ❌</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:.5rem;margin-top:1.25rem">
+      <button class="btn btn-acc" onclick="saveUser()">💾 Save Changes</button>
+      <button class="btn btn-red" onclick="deleteUser()">🗑️ Delete User</button>
+      <button class="btn btn-ghost" onclick="closeModal('user-modal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- DESCRIPTION MODAL -->
+<div class="modal-overlay" id="desc-modal">
+  <div class="modal-box" style="max-width:600px">
+    <div class="modal-title">
+      <span>📝 Calculator Description</span>
+      <div class="modal-close" onclick="closeModal('desc-modal')">✕</div>
+    </div>
+    <input type="hidden" id="dm-id"/>
+    <div class="form-row">
+      <div><label>Calculator ID *</label><input class="inp" id="dm-calcid" placeholder="e.g. sip" style="margin:0"/></div>
+      <div><label>Calculator Name *</label><input class="inp" id="dm-calcname" placeholder="e.g. SIP Calculator" style="margin:0"/></div>
+    </div>
+    <div class="form-row" style="margin-top:.75rem">
+      <div><label>Section</label>
+        <select class="inp" id="dm-section" style="margin:0">
+          <option value="">Select section</option>
+          <option>Finance</option><option>Math</option><option>Physics</option>
+          <option>Chemistry</option><option>Health</option><option>Engineering</option>
+          <option>Education</option><option>Agriculture</option>
+        </select>
+      </div>
+      <div><label>Status</label>
+        <select class="inp" id="dm-published" style="margin:0">
+          <option value="true">Published ✅</option>
+          <option value="false">Draft 📝</option>
+        </select>
+      </div>
+    </div>
+    <div style="margin-top:.75rem"><label>Description</label><textarea class="inp" id="dm-desc" placeholder="Brief description of the calculator..." style="margin:0;min-height:70px"></textarea></div>
+    <div style="margin-top:.75rem"><label>Formula</label><input class="inp" id="dm-formula" placeholder="e.g. A = P(1 + r/n)^nt" style="margin:0"/></div>
+    <div style="margin-top:.75rem"><label>How to Use</label><textarea class="inp" id="dm-how" placeholder="Step by step guide..." style="margin:0;min-height:70px"></textarea></div>
+    <div style="margin-top:.75rem"><label>Tags (comma separated)</label><input class="inp" id="dm-tags" placeholder="investment, returns, monthly" style="margin:0"/></div>
+    <div style="display:flex;gap:.5rem;margin-top:1.25rem">
+      <button class="btn btn-acc" onclick="saveDescription()">💾 Save</button>
+      <button id="dm-delete-btn" class="btn btn-red" onclick="deleteDesc(document.getElementById('dm-id').value)">🗑️ Delete</button>
+      <button class="btn btn-ghost" onclick="closeModal('desc-modal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD USER MODAL -->
+<div class="modal-overlay" id="add-user-modal">
+  <div class="modal-box">
+    <div class="modal-title">
+      <span>➕ Add New User</span>
+      <div class="modal-close" onclick="closeModal('add-user-modal')">✕</div>
+    </div>
+    <div class="form-row">
+      <div><label>Name</label><input class="inp" id="au-name" type="text" style="margin:0"/></div>
+      <div><label>Email</label><input class="inp" id="au-email" type="email" style="margin:0"/></div>
+    </div>
+    <div style="margin-top:.75rem"><label>Password</label><input class="inp" id="au-pw" type="password" placeholder="Min 6 chars" style="margin:0"/></div>
+    <div class="form-row" style="margin-top:.75rem">
+      <div><label>Role</label>
+        <select class="inp" id="au-role" style="margin:0">
+          <option value="user">User</option>
+          <option value="admin">Admin</option>
+        </select>
+      </div>
+      <div><label>Plan</label>
+        <select class="inp" id="au-plan" style="margin:0">
+          <option value="free">Free</option>
+          <option value="pro">Pro</option>
+          <option value="lifetime">Lifetime</option>
+        </select>
+      </div>
+    </div>
+    <div style="display:flex;gap:.5rem;margin-top:1.25rem">
+      <button class="btn btn-acc" onclick="createUser()">✅ Create User</button>
+      <button class="btn btn-ghost" onclick="closeModal('add-user-modal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── CONFIG ──
+var API = localStorage.getItem('admin_api_url') || 'https://calchub-backend.vercel.app/api';
+var _token = null;
+var _adminUser = null;
+var _logs = JSON.parse(localStorage.getItem('admin_logs') || '[]');
+var _currentSection = 'dashboard';
+var usersPage = 1;
+var descsPage = 1;
+var _allDescs = [];
+var _announcements = JSON.parse(localStorage.getItem('admin_announcements') || '[]');
+
+// ── UTILS ──
+function toast(msg, type) {
+  type = type || 'info';
+  var icons = {info:'ℹ️',success:'✅',error:'❌',warning:'⚠️'};
+  var wrap = document.getElementById('toast-wrap');
+  var t = document.createElement('div');
+  t.className = 'toast';
+  t.innerHTML = (icons[type]||'ℹ️') + ' ' + msg;
+  wrap.appendChild(t);
+  addLog(type, msg);
+  setTimeout(function(){t.classList.add('out');setTimeout(function(){if(t.parentNode)t.parentNode.removeChild(t);},250);}, 3000);
+}
+
+function fmtDate(d) {
+  if(!d) return '—';
+  return new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
+}
+
+function fmtNum(n) {
+  if(n >= 1000000) return (n/1000000).toFixed(1) + 'M';
+  if(n >= 1000) return (n/1000).toFixed(1) + 'K';
+  return String(n);
+}
+
+async function api(path, method, body) {
+  method = method || 'GET';
+  var h = {'Content-Type':'application/json'};
+  if(_token) h['Authorization'] = 'Bearer ' + _token;
+  try {
+    var r = await fetch(API + path, {method:method, headers:h, body:body?JSON.stringify(body):undefined});
+    return r.json();
+  } catch(e) { return {success:false, message:'Network error'}; }
+}
+
+function addLog(type, msg) {
+  _logs.unshift({type:type, msg:msg, time:new Date().toISOString()});
+  _logs = _logs.slice(0,100);
+  localStorage.setItem('admin_logs', JSON.stringify(_logs));
+  renderLogs();
+}
+
+function renderLogs() {
+  var el = document.getElementById('logs-list');
+  if(!el) return;
+  if(!_logs.length){el.innerHTML='<div class="empty"><div class="empty-icon">🔍</div><div class="empty-text">No activity logs yet</div></div>';return;}
+  var icons = {info:'ℹ️',success:'✅',error:'❌',warning:'⚠️'};
+  el.innerHTML = _logs.map(function(l){
+    return '<div class="activity-item">'+
+      '<div class="activity-dot" style="background:'+(l.type==='success'?'#10b981':l.type==='error'?'#ef4444':l.type==='warning'?'#f59e0b':'#3b82f6')+'"></div>'+
+      '<div class="activity-content">'+
+        '<div class="activity-text">'+(icons[l.type]||'ℹ️')+' '+l.msg+'</div>'+
+        '<div class="activity-time">'+new Date(l.time).toLocaleString('en-IN')+'</div>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+
+function clearLogs() {
+  _logs = [];
+  localStorage.removeItem('admin_logs');
+  renderLogs();
+  toast('Logs cleared','info');
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('on');
+}
+
+function toggleSidebar() {
+  var aside = document.getElementById('sidebar');
+  aside.classList.toggle('collapsed');
+}
+
+// ── LOGIN ──
+async function doAdminLogin() {
+  var btn = document.getElementById('login-btn');
+  var email = document.getElementById('l-email').value.trim();
+  var pw = document.getElementById('l-pw').value;
+  var err = document.getElementById('login-err');
+  err.classList.remove('on');
+  if(!email||!pw){err.textContent='Email aur password chahiye';err.classList.add('on');return;}
+  btn.textContent='Logging in...'; btn.disabled=true;
+  var d = await api('/auth/login','POST',{email:email,password:pw});
+  btn.textContent='🔐 Login to Admin Panel'; btn.disabled=false;
+  if(d.success && d.user.role==='admin'){
+    _token=d.token; _adminUser=d.user;
+    localStorage.setItem('admin_token',_token);
+    localStorage.setItem('admin_user',JSON.stringify(_adminUser));
+    initApp(d.user);
+  } else if(d.success && d.user.role!=='admin'){
+    err.textContent='Access denied — admin account required';err.classList.add('on');
+  } else {
+    err.textContent=d.message||'Login failed';err.classList.add('on');
+  }
+}
+
+function initApp(user) {
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app').classList.add('show');
+  var av = (user.name||'A')[0].toUpperCase();
+  document.getElementById('admin-av').textContent = av;
+  document.getElementById('admin-name').textContent = user.name || 'Admin';
+  document.getElementById('set-admin-name').textContent = user.name;
+  document.getElementById('set-admin-email').textContent = user.email;
+  document.getElementById('set-admin-plan').textContent = user.plan || 'free';
+  document.getElementById('set-login-count').textContent = user.loginCount || 0;
+  document.getElementById('api-url-setting').value = API;
+  loadDashboard();
+  checkApiStatus();
+}
+
+function doLogout() {
+  _token=null; _adminUser=null;
+  localStorage.removeItem('admin_token');
+  localStorage.removeItem('admin_user');
+  document.getElementById('app').classList.remove('show');
+  document.getElementById('login-screen').style.display='flex';
+}
+
+// ── AUTO LOGIN ──
+(async function(){
+  var savedToken = localStorage.getItem('admin_token');
+  var savedUser = localStorage.getItem('admin_user');
+  if(savedToken && savedUser){
+    _token = savedToken;
+    var u = JSON.parse(savedUser);
+    var check = await api('/auth/me');
+    if(check.success && check.user.role==='admin'){
+      _adminUser = check.user;
+      initApp(_adminUser);
+    } else {
+      localStorage.removeItem('admin_token');
+      localStorage.removeItem('admin_user');
+    }
+  }
+  renderLogs();
+})();
+
+// ── NAVIGATION ──
+function showSection(name) {
+  _currentSection = name;
+  document.querySelectorAll('.section').forEach(function(s){s.classList.remove('active');});
+  var sec = document.getElementById('sec-'+name);
+  if(sec) sec.classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active');});
+  var titles = {dashboard:'📊 Dashboard',users:'👥 Users',descriptions:'📝 Calculator Descriptions',
+    analytics:'📈 Analytics',revenue:'💰 Revenue',plans:'⚡ Plans Manager',
+    announcements:'📢 Announcements',export:'📤 Export Data',settings:'⚙️ Settings',
+    logs:'🔍 Activity Logs',calculations:'🧮 Saved Calculations'};
+  document.getElementById('page-title').textContent = titles[name] || name;
+  document.querySelectorAll('.nav-item').forEach(function(n){
+    if(n.getAttribute('onclick') && n.getAttribute('onclick').includes("'"+name+"'")){
+      n.classList.add('active');
+    }
+  });
+  if(name==='dashboard') loadDashboard();
+  else if(name==='users') loadUsers();
+  else if(name==='descriptions') loadDescriptions();
+  else if(name==='analytics') loadAnalytics();
+  else if(name==='revenue') loadRevenue();
+  else if(name==='calculations') loadCalculations();
+  else if(name==='announcements') renderAnnouncements();
+  else if(name==='logs') renderLogs();
+}
+
+function refreshCurrent() { showSection(_currentSection); }
+
+// ── DASHBOARD ──
+async function loadDashboard() {
+  var d = await api('/admin/dashboard');
+  if(!d.success){toast('Dashboard load fail','error');return;}
+  var s = d.stats;
+  document.getElementById('s-total').textContent = fmtNum(s.users.total);
+  document.getElementById('s-today').textContent = '+'+s.users.today+' today';
+  document.getElementById('s-calcs').textContent = fmtNum(s.calculations.total);
+  document.getElementById('s-avg').textContent = s.calculations.avgPerUser+' avg per user';
+  document.getElementById('s-premium').textContent = s.users.premium;
+  document.getElementById('s-free-pct').textContent = s.users.freePercent+'% free users';
+  document.getElementById('s-month').textContent = s.users.thisMonth;
+  document.getElementById('s-descs').textContent = s.descriptions ? s.descriptions.total : '—';
+  document.getElementById('users-count-badge').textContent = s.users.total;
+
+  // Top calcs bars
+  var topCalcs = s.topCalculators || [];
+  var maxT = Math.max.apply(null, topCalcs.map(function(x){return x.total;})) || 1;
+  document.getElementById('top-calcs-bars').innerHTML = topCalcs.slice(0,8).map(function(c){
+    return '<div class="mini-bar-item">'+
+      '<div class="mini-bar-label">'+((c.name||c._id||'Unknown').substring(0,18))+'</div>'+
+      '<div class="mini-bar"><div class="mini-bar-fill" style="width:'+Math.round(c.total/maxT*100)+'%"></div></div>'+
+      '<div class="mini-bar-val">'+fmtNum(c.total)+'</div>'+
+    '</div>';
+  }).join('') || '<div style="color:var(--mu);font-size:.75rem">No usage data yet</div>';
+
+  // Recent activity
+  document.getElementById('recent-activity').innerHTML = _logs.slice(0,6).map(function(l){
+    return '<div class="activity-item">'+
+      '<div class="activity-dot" style="background:#3b82f6;margin-top:.35rem"></div>'+
+      '<div class="activity-content"><div class="activity-text" style="font-size:.72rem">'+l.msg+'</div>'+
+      '<div class="activity-time">'+new Date(l.time).toLocaleTimeString()+'</div></div>'+
+    '</div>';
+  }).join('') || '<div style="color:var(--mu);font-size:.75rem">No recent activity</div>';
+
+  // Load analytics for category bars
+  var an = await api('/admin/analytics?days=30');
+  if(an.success){
+    var cats = an.analytics.bySection || [];
+    var maxC = Math.max.apply(null, cats.map(function(x){return x.total;})) || 1;
+    document.getElementById('category-bars').innerHTML = cats.slice(0,8).map(function(c){
+      return '<div class="mini-bar-item">'+
+        '<div class="mini-bar-label">'+(c._id||'Other')+'</div>'+
+        '<div class="mini-bar"><div class="mini-bar-fill" style="width:'+Math.round(c.total/maxC*100)+'%;background:linear-gradient(90deg,#f97316,#8b5cf6)"></div></div>'+
+        '<div class="mini-bar-val">'+fmtNum(c.total)+'</div>'+
+      '</div>';
+    }).join('') || '<div style="color:var(--mu);font-size:.75rem">No data</div>';
+
+    // Recent users
+    var recentUsers = an.analytics.recentUsers || [];
+    document.getElementById('recent-users-tbl').innerHTML = recentUsers.map(function(u){
+      return '<tr><td>'+u.name+'</td><td style="font-size:.7rem">'+u.email+'</td>'+
+        '<td><span class="badge '+(u.role==='admin'?'badge-purple':u.role==='premium'?'badge-orange':'badge-gray')+'">'+u.role+'</span></td>'+
+        '<td style="font-size:.7rem">'+fmtDate(u.createdAt)+'</td></tr>';
+    }).join('') || '<tr><td colspan="4" style="color:var(--mu);text-align:center">No users yet</td></tr>';
+  }
+}
+
+// ── USERS ──
+async function loadUsers(page) {
+  page = page || 1;
+  usersPage = page;
+  var role = document.getElementById('user-role-filter').value;
+  var plan = document.getElementById('user-plan-filter').value;
+  var search = document.getElementById('user-search').value;
+  var url = '/admin/users?page='+page+'&limit=20';
+  if(role) url += '&role='+role;
+  if(plan) url += '&plan='+plan;
+  if(search) url += '&search='+encodeURIComponent(search);
+  var d = await api(url);
+  if(!d.success){toast('Users load fail','error');return;}
+  var tbody = document.getElementById('users-tbl');
+  if(!d.users.length){
+    tbody.innerHTML='<tr><td colspan="9" style="color:var(--mu);text-align:center;padding:2rem">No users found</td></tr>';
+    return;
+  }
+  tbody.innerHTML = d.users.map(function(u,i){
+    var planBadge = u.plan==='lifetime'?'badge-orange':u.plan==='pro'?'badge-purple':'badge-gray';
+    var roleBadge = u.role==='admin'?'badge-purple':u.role==='premium'?'badge-orange':'badge-blue';
+    return '<tr>'+
+      '<td style="color:var(--mu);font-size:.7rem">'+(((page-1)*20)+i+1)+'</td>'+
+      '<td><strong>'+u.name+'</strong></td>'+
+      '<td style="font-size:.7rem;color:var(--mu)">'+u.email+'</td>'+
+      '<td><span class="badge '+roleBadge+'">'+u.role+'</span></td>'+
+      '<td><span class="badge '+planBadge+'">'+u.plan+'</span></td>'+
+      '<td style="color:var(--mu)">'+((u.saves)||0)+'</td>'+
+      '<td style="font-size:.7rem;color:var(--mu)">'+fmtDate(u.createdAt)+'</td>'+
+      '<td><span class="badge '+(u.isActive?'badge-green':'badge-red')+'">'+(u.isActive?'Active':'Blocked')+'</span></td>'+
+      '<td><button class="btn btn-ghost btn-sm" onclick="openUserModal(\''+u._id+'\',\''+u.name.replace(/'/g,'`')+'\',\''+u.email+'\',\''+u.role+'\',\''+u.plan+'\','+u.isActive+')">Edit</button></td>'+
+    '</tr>';
+  }).join('');
+
+  // Pagination
+  var pages = d.pagination.pages;
+  var paginEl = document.getElementById('users-pagination');
+  if(pages <= 1){paginEl.innerHTML='';return;}
+  var btns = '';
+  for(var p=1;p<=pages;p++){
+    btns += '<button class="page-btn'+(p===page?' active':'')+'" onclick="loadUsers('+p+')">'+p+'</button>';
+  }
+  paginEl.innerHTML = '<div class="pagination">'+
+    '<button class="page-btn" onclick="loadUsers('+(page>1?page-1:1)+')">← Prev</button>'+
+    btns+
+    '<button class="page-btn" onclick="loadUsers('+(page<pages?page+1:pages)+')">Next →</button>'+
+    '<span class="page-info">Total: '+d.pagination.total+' users</span>'+
+  '</div>';
+}
+
+function filterUsers() {
+  clearTimeout(window._userSearchTimer);
+  window._userSearchTimer = setTimeout(function(){loadUsers(1);}, 400);
+}
+
+function openUserModal(id, name, email, role, plan, isActive) {
+  document.getElementById('um-id').value = id;
+  document.getElementById('um-name').value = name;
+  document.getElementById('um-email').value = email;
+  document.getElementById('um-role').value = role;
+  document.getElementById('um-plan').value = plan;
+  document.getElementById('um-active').value = String(isActive);
+  document.getElementById('user-modal-title').textContent = '👤 Edit: ' + name;
+  document.getElementById('user-modal').classList.add('on');
+}
+
+function openAddUserModal() {
+  document.getElementById('add-user-modal').classList.add('on');
+}
+
+async function createUser() {
+  var name = document.getElementById('au-name').value.trim();
+  var email = document.getElementById('au-email').value.trim();
+  var pw = document.getElementById('au-pw').value;
+  var role = document.getElementById('au-role').value;
+  var plan = document.getElementById('au-plan').value;
+  if(!name||!email||!pw){toast('Saari fields fill karo','warning');return;}
+  var d = await api('/auth/register','POST',{name:name,email:email,password:pw});
+  if(d.success){
+    if(role!=='user'||plan!=='free'){
+      await api('/admin/users/'+d.user.id,'PUT',{role:role,plan:plan});
+    }
+    toast('User created: '+name,'success');
+    closeModal('add-user-modal');
+    loadUsers();
+  } else {
+    toast(d.message||'Create fail','error');
+  }
+}
+
+async function saveUser() {
+  var id = document.getElementById('um-id').value;
+  var role = document.getElementById('um-role').value;
+  var plan = document.getElementById('um-plan').value;
+  var isActive = document.getElementById('um-active').value === 'true';
+  var d = await api('/admin/users/'+id,'PUT',{role:role,plan:plan,isActive:isActive});
+  if(d.success){toast('User updated','success');closeModal('user-modal');loadUsers();}
+  else toast(d.message||'Update fail','error');
+}
+
+async function deleteUser() {
+  var id = document.getElementById('um-id').value;
+  var name = document.getElementById('um-name').value;
+  if(!confirm('Delete user "'+name+'"? This cannot be undone.')) return;
+  var d = await api('/admin/users/'+id,'DELETE');
+  if(d.success){toast('User deleted','success');closeModal('user-modal');loadUsers();}
+  else toast(d.message||'Delete fail','error');
+}
+
+function exportUsers() {
+  api('/admin/users?limit=1000').then(function(d){
+    if(!d.success){toast('Export fail','error');return;}
+    var rows = [['Name','Email','Role','Plan','Active','Joined']];
+    d.users.forEach(function(u){
+      rows.push([u.name,u.email,u.role,u.plan,u.isActive,fmtDate(u.createdAt)]);
+    });
+    downloadCSV('calchub-users.csv', rows);
+    toast('Users exported!','success');
+  });
+}
+
+// ── DESCRIPTIONS ──
+async function loadDescriptions() {
+  var section = document.getElementById('desc-section-filter').value;
+  var url = '/admin/descriptions?';
+  if(section) url += 'section='+encodeURIComponent(section);
+  var d = await api(url);
+  if(!d.success){toast('Descriptions load fail','error');return;}
+  _allDescs = d.descriptions || [];
+  renderDescriptions(_allDescs);
+}
+
+function searchDescs() {
+  var q = document.getElementById('desc-search').value.toLowerCase();
+  var filtered = _allDescs.filter(function(d){
+    return (d.calcName||'').toLowerCase().includes(q) || (d.calcId||'').toLowerCase().includes(q);
+  });
+  renderDescriptions(filtered);
+}
+
+function renderDescriptions(descs) {
+  var tbody = document.getElementById('desc-tbl');
+  if(!descs.length){
+    tbody.innerHTML='<tr><td colspan="6" style="color:var(--mu);text-align:center;padding:2rem">No descriptions found</td></tr>';
+    return;
+  }
+  tbody.innerHTML = descs.slice(0,50).map(function(d){
+    return '<tr>'+
+      '<td style="font-family:\'JetBrains Mono\',monospace;font-size:.7rem;color:var(--mu)">'+d.calcId+'</td>'+
+      '<td><strong>'+d.calcName+'</strong></td>'+
+      '<td><span class="badge badge-blue">'+(d.section||'—')+'</span></td>'+
+      '<td style="font-size:.7rem;color:var(--mu);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+((d.description||'').substring(0,60)+(d.description&&d.description.length>60?'...':''))+'</td>'+
+      '<td><span class="badge '+(d.isPublished!==false?'badge-green':'badge-yellow')+'">'+(d.isPublished!==false?'Published':'Draft')+'</span></td>'+
+      '<td><button class="btn btn-ghost btn-sm" onclick="openDescModal(\''+d._id+'\')">Edit</button></td>'+
+    '</tr>';
+  }).join('');
+}
+
+function openDescModal(id) {
+  var desc = id ? _allDescs.find(function(d){return d._id===id;}) : null;
+  document.getElementById('dm-id').value = id || '';
+  document.getElementById('dm-calcid').value = desc ? desc.calcId : '';
+  document.getElementById('dm-calcname').value = desc ? desc.calcName : '';
+  document.getElementById('dm-section').value = desc ? (desc.section||'') : '';
+  document.getElementById('dm-desc').value = desc ? (desc.description||'') : '';
+  document.getElementById('dm-formula').value = desc ? (desc.formula||'') : '';
+  document.getElementById('dm-how').value = desc ? (desc.howToUse||'') : '';
+  document.getElementById('dm-tags').value = desc ? (desc.tags||'') : '';
+  document.getElementById('dm-published').value = desc ? String(desc.isPublished!==false) : 'true';
+  document.getElementById('dm-delete-btn').style.display = id ? 'inline-flex' : 'none';
+  document.getElementById('desc-modal').classList.add('on');
+}
+
+async function saveDescription() {
+  var id = document.getElementById('dm-id').value;
+  var payload = {
+    calcId: document.getElementById('dm-calcid').value.trim(),
+    calcName: document.getElementById('dm-calcname').value.trim(),
+    section: document.getElementById('dm-section').value,
+    description: document.getElementById('dm-desc').value.trim(),
+    formula: document.getElementById('dm-formula').value.trim(),
+    howToUse: document.getElementById('dm-how').value.trim(),
+    tags: document.getElementById('dm-tags').value.trim(),
+    isPublished: document.getElementById('dm-published').value === 'true'
+  };
+  if(!payload.calcId||!payload.calcName){toast('Calc ID aur Name required','warning');return;}
+  var url = id ? '/admin/descriptions/'+id : '/admin/descriptions';
+  var method = id ? 'PUT' : 'POST';
+  var d = await api(url, method, payload);
+  if(d.success){toast(id?'Updated!':'Created!','success');closeModal('desc-modal');loadDescriptions();}
+  else toast(d.message||'Save fail','error');
+}
+
+async function deleteDesc(id) {
+  if(!id){toast('No ID','warning');return;}
+  if(!confirm('Delete this description?')) return;
+  var d = await api('/admin/descriptions/'+id,'DELETE');
+  if(d.success){toast('Deleted','success');closeModal('desc-modal');loadDescriptions();}
+  else toast(d.message||'Delete fail','error');
+}
+
+function exportDescriptions() {
+  var json = JSON.stringify(_allDescs, null, 2);
+  var blob = new Blob([json], {type:'application/json'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'calchub-descriptions.json';
+  a.click();
+  toast('Descriptions exported!','success');
+}
+
+// ── ANALYTICS ──
+async function loadAnalytics() {
+  var days = document.getElementById('analytics-days').value;
+  var d = await api('/admin/analytics?days='+days);
+  if(!d.success){toast('Analytics load fail','error');return;}
+  var an = d.analytics;
+
+  // Top calcs
+  var topCalcs = [];
+  if(an.daily) {
+    // Use top calcs from dashboard
+  }
+  var dashD = await api('/admin/dashboard');
+  if(dashD.success) {
+    var tops = dashD.stats.topCalculators || [];
+    var maxT = Math.max.apply(null, tops.map(function(x){return x.total;})) || 1;
+    document.getElementById('analytics-top-calcs').innerHTML = tops.slice(0,10).map(function(c){
+      return '<div class="mini-bar-item">'+
+        '<div class="mini-bar-label">'+((c.name||c._id||'').substring(0,18))+'</div>'+
+        '<div class="mini-bar"><div class="mini-bar-fill" style="width:'+Math.round(c.total/maxT*100)+'%"></div></div>'+
+        '<div class="mini-bar-val">'+fmtNum(c.total)+'</div>'+
+      '</div>';
+    }).join('') || '<div style="color:var(--mu)">No data</div>';
+  }
+
+  // By section
+  var cats = an.bySection || [];
+  var maxC = Math.max.apply(null, cats.map(function(x){return x.total;})) || 1;
+  document.getElementById('section-bars').innerHTML = cats.slice(0,10).map(function(c){
+    return '<div class="mini-bar-item">'+
+      '<div class="mini-bar-label">'+(c._id||'Other')+'</div>'+
+      '<div class="mini-bar"><div class="mini-bar-fill" style="width:'+Math.round(c.total/maxC*100)+'%;background:linear-gradient(90deg,#f97316,#8b5cf6)"></div></div>'+
+      '<div class="mini-bar-val">'+fmtNum(c.total)+'</div>'+
+    '</div>';
+  }).join('') || '<div style="color:var(--mu)">No data</div>';
+
+  // Recent signups
+  var recUsers = an.recentUsers || [];
+  document.getElementById('recent-signups-tbl').innerHTML = recUsers.map(function(u){
+    return '<tr><td>'+u.name+'</td><td style="font-size:.7rem">'+u.email+'</td>'+
+      '<td><span class="badge '+(u.role==='admin'?'badge-purple':'badge-blue')+'">'+u.role+'</span></td>'+
+      '<td><span class="badge '+(u.plan==='lifetime'?'badge-orange':u.plan==='pro'?'badge-purple':'badge-gray')+'">'+u.plan+'</span></td>'+
+      '<td style="font-size:.7rem">'+fmtDate(u.createdAt)+'</td></tr>';
+  }).join('') || '<tr><td colspan="5" style="color:var(--mu);text-align:center">No recent signups</td></tr>';
+}
+
+function exportAnalytics() {
+  toast('Exporting analytics...','info');
+  api('/admin/analytics?days=90').then(function(d){
+    if(!d.success){toast('Export fail','error');return;}
+    var rows = [['Date','Total Usage']];
+    (d.analytics.daily||[]).forEach(function(r){ rows.push([r._id, r.total]); });
+    downloadCSV('calchub-analytics.csv', rows);
+    toast('Analytics exported!','success');
+  });
+}
+
+// ── CALCULATIONS ──
+async function loadCalculations() {
+  var dash = await api('/admin/dashboard');
+  if(dash.success){
+    var total = dash.stats.calculations.total;
+    var avg = dash.stats.calculations.avgPerUser;
+    document.getElementById('calc-total').textContent = fmtNum(total);
+    document.getElementById('calc-avg').textContent = avg;
+  }
+  document.getElementById('calc-today').textContent = '—';
+  document.getElementById('calcs-tbl').innerHTML = '<tr><td colspan="5" style="color:var(--mu);text-align:center;padding:2rem">Calculation details require user-level API access</td></tr>';
+}
+
+// ── REVENUE ──
+async function loadRevenue() {
+  var d = await api('/admin/revenue');
+  if(!d.success){
+    document.getElementById('revenue-tbl').innerHTML='<tr><td colspan="6" style="color:var(--mu);text-align:center;padding:2rem">No payment data yet. Setup Razorpay to start collecting payments.</td></tr>';
+    return;
+  }
+  var rev = d.revenue;
+  var total = 0;
+  (rev.byPlan||[]).forEach(function(p){
+    var amt = parseInt((p.total||'0').replace(/[^0-9]/g,''));
+    total += amt;
+    if(p.plan==='pro_monthly'){
+      document.getElementById('rev-pro-m').textContent = p.total||'₹0';
+      document.getElementById('rev-pro-m-cnt').textContent = (p.count||0)+' payments';
+    } else if(p.plan==='pro_yearly'){
+      document.getElementById('rev-pro-y').textContent = p.total||'₹0';
+      document.getElementById('rev-pro-y-cnt').textContent = (p.count||0)+' payments';
+    } else if(p.plan==='lifetime'){
+      document.getElementById('rev-life').textContent = p.total||'₹0';
+      document.getElementById('rev-life-cnt').textContent = (p.count||0)+' sales';
+    }
+  });
+  document.getElementById('rev-total').textContent = rev.total||'₹0';
+  document.getElementById('s-rev').textContent = rev.total||'₹0';
+}
+
+function exportRevenue() {
+  toast('Revenue export feature coming soon with Razorpay integration','info');
+}
+
+// ── PLANS ──
+async function grantPlan() {
+  var email = document.getElementById('grant-email').value.trim();
+  var plan = document.getElementById('grant-plan').value;
+  if(!email){toast('Email chahiye','warning');return;}
+  // Find user by email
+  var users = await api('/admin/users?search='+encodeURIComponent(email)+'&limit=5');
+  if(!users.success||!users.users.length){toast('User nahi mila: '+email,'error');return;}
+  var user = users.users.find(function(u){return u.email===email;});
+  if(!user){toast('Exact email match nahi mila','error');return;}
+  var d = await api('/admin/users/'+user._id,'PUT',{plan:plan,role:plan!=='free'?'premium':user.role});
+  if(d.success){toast('Plan granted: '+plan+' to '+email,'success');document.getElementById('grant-email').value='';}
+  else toast(d.message||'Grant fail','error');
+}
+
+// ── ANNOUNCEMENTS ──
+function renderAnnouncements() {
+  var el = document.getElementById('announcements-list');
+  if(!_announcements.length){
+    el.innerHTML='<div class="empty"><div class="empty-icon">📢</div><div class="empty-text">No active announcements</div></div>';
+    return;
+  }
+  var colors = {info:'badge-blue',success:'badge-green',warning:'badge-yellow',promo:'badge-purple'};
+  el.innerHTML = _announcements.map(function(a,i){
+    return '<div class="announce-card" style="display:flex;align-items:center;justify-content:space-between;gap:1rem">'+
+      '<div><span class="badge '+(colors[a.type]||'badge-blue')+'" style="margin-bottom:.4rem">'+a.type.toUpperCase()+'</span>'+
+      '<div style="font-size:.82rem;font-weight:700">'+a.text+'</div>'+
+      '<div style="font-size:.65rem;color:var(--mu);margin-top:.25rem">Target: '+a.target+' • '+fmtDate(a.date)+'</div></div>'+
+      '<button class="btn btn-red btn-sm" onclick="deleteAnnouncement('+i+')">🗑️</button>'+
+    '</div>';
+  }).join('');
+}
+
+function createAnnouncement() {
+  var text = document.getElementById('ann-text').value.trim();
+  var type = document.getElementById('ann-type').value;
+  var target = document.getElementById('ann-target').value;
+  if(!text){toast('Announcement text chahiye','warning');return;}
+  _announcements.unshift({text:text,type:type,target:target,date:new Date().toISOString()});
+  localStorage.setItem('admin_announcements', JSON.stringify(_announcements));
+  document.getElementById('ann-text').value='';
+  renderAnnouncements();
+  toast('Announcement published!','success');
+}
+
+function deleteAnnouncement(idx) {
+  _announcements.splice(idx,1);
+  localStorage.setItem('admin_announcements', JSON.stringify(_announcements));
+  renderAnnouncements();
+  toast('Deleted','info');
+}
+
+// ── SETTINGS ──
+function saveApiUrl() {
+  var url = document.getElementById('api-url-setting').value.trim();
+  if(!url){toast('URL chahiye','warning');return;}
+  API = url;
+  localStorage.setItem('admin_api_url', url);
+  toast('API URL saved!','success');
+  checkApiStatus();
+}
+
+async function checkApiStatus() {
+  var dot = document.getElementById('api-status-dot');
+  var txt = document.getElementById('api-status-text');
+  try {
+    var r = await fetch(API.replace('/api','') + '/health');
+    var d = await r.json();
+    if(d.success){
+      dot.style.background='#10b981';
+      txt.textContent = 'Connected ✅ — ' + API;
+    } else throw new Error();
+  } catch(e) {
+    dot.style.background='#ef4444';
+    txt.textContent = 'Cannot connect ❌ — Check URL';
+  }
+}
+
+// ── EXPORT UTILS ──
+function downloadCSV(filename, rows) {
+  var csv = rows.map(function(r){
+    return r.map(function(cell){
+      var s = String(cell||'').replace(/"/g,'""');
+      return s.includes(',')||s.includes('"')||s.includes('\n') ? '"'+s+'"' : s;
+    }).join(',');
+  }).join('\n');
+  var blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+}
+
+// ── GLOBAL SEARCH ──
+function handleGlobalSearch(e) {
+  if(e.key !== 'Enter') return;
+  var q = e.target.value.trim();
+  if(!q) return;
+  if(_currentSection === 'users'){
+    document.getElementById('user-search').value = q;
+    filterUsers();
+  } else if(_currentSection === 'descriptions'){
+    document.getElementById('desc-search').value = q;
+    searchDescs();
+  } else {
+    showSection('users');
+    setTimeout(function(){ document.getElementById('user-search').value=q; filterUsers(); }, 300);
+  }
+}
+
+// ── KEYBOARD SHORTCUTS ──
+document.addEventListener('keydown', function(e){
+  if(e.key==='Enter' && document.getElementById('login-screen').style.display!=='none'){
+    doAdminLogin();
+  }
+  if(e.key==='Escape'){
+    document.querySelectorAll('.modal-overlay.on').forEach(function(m){ m.classList.remove('on'); });
+  }
+});
+// ═══ NEW ADMIN FEATURES JS ═══
+
+// Update showSection to handle new sections
+var _origShowSection = showSection;
+showSection = function(name) {
+  _origShowSection(name);
+  if(name==='reviews') loadReviewsAdmin();
+  else if(name==='banners') loadBanners();
+  else if(name==='notifications') loadNotifHistory();
+};
+
+// ── BULK USER ACTIONS ──
+var _selectedUsers = [];
+function toggleAllCheckboxes() {
+  var all = document.getElementById('cb-all').checked;
+  document.querySelectorAll('.cb-row').forEach(function(cb) {
+    cb.checked = all;
+    var id = cb.dataset.id;
+    if(all && !_selectedUsers.includes(id)) _selectedUsers.push(id);
+    else if(!all) _selectedUsers = [];
+  });
+  updateBulkBar();
+}
+function toggleUserCheckbox(cb) {
+  var id = cb.dataset.id;
+  if(cb.checked) { if(!_selectedUsers.includes(id)) _selectedUsers.push(id); }
+  else _selectedUsers = _selectedUsers.filter(function(x){return x!==id;});
+  updateBulkBar();
+}
+function updateBulkBar() {
+  var bar = document.getElementById('bulk-bar');
+  var cnt = document.getElementById('bulk-count');
+  if(!bar||!cnt) return;
+  bar.classList.toggle('on', _selectedUsers.length > 0);
+  cnt.textContent = _selectedUsers.length + ' selected';
+}
+function clearBulkSelection() {
+  _selectedUsers = [];
+  document.querySelectorAll('.cb-row,.cb-all').forEach(function(cb){cb.checked=false;});
+  updateBulkBar();
+}
+async function bulkAction(action) {
+  if(!_selectedUsers.length){toast('No users selected','warning');return;}
+  var map = {premium:{role:'premium',plan:'pro'}, ban:{isActive:false}, activate:{isActive:true}};
+  var payload = map[action];
+  if(!payload){toast('Unknown action','error');return;}
+  var done = 0;
+  for(var id of _selectedUsers) {
+    var r = await api('/admin/users/'+id,'PUT',payload);
+    if(r.success) done++;
+  }
+  toast(done+' users updated ('+action+')','success');
+  clearBulkSelection();
+  loadUsers();
+}
+
+// Patch loadUsers to add checkboxes
+var _origLoadUsers = loadUsers;
+loadUsers = async function(page) {
+  await _origLoadUsers(page);
+  // Add checkboxes to each row
+  var tbody = document.getElementById('users-tbl');
+  if(!tbody) return;
+  tbody.querySelectorAll('tr').forEach(function(row) {
+    if(row.querySelector('td') && !row.querySelector('.cb-cell')) {
+      var td = document.createElement('td');
+      td.className = 'cb-cell checkbox-cell';
+      var id = row.querySelector('button[onclick*="openUserModal"]');
+      if(id) {
+        var match = id.getAttribute('onclick').match(/'([a-f0-9]{24})'/);
+        if(match) {
+          var cb = document.createElement('input');
+          cb.type = 'checkbox'; cb.className = 'cb-row';
+          cb.dataset.id = match[1];
+          cb.onchange = function(){toggleUserCheckbox(this);};
+          td.appendChild(cb);
+        }
+      }
+      row.insertBefore(td, row.firstChild);
+    }
+  });
+};
+
+// ── REVIEWS ──
+function loadReviewsAdmin() {
+  var filter = document.getElementById('rev-filter') ? document.getElementById('rev-filter').value : 'all';
+  var reviews = JSON.parse(localStorage.getItem('calchub_reviews') || '[]');
+  var total = reviews.length;
+  var approved = reviews.filter(function(r){return r.approved;});
+  var pending = reviews.filter(function(r){return !r.approved;});
+  var fiveStars = reviews.filter(function(r){return r.rating===5;});
+  var avg = total ? reviews.reduce(function(s,r){return s+r.rating;},0)/total : 0;
+
+  // Update stats
+  var el = document.getElementById('rev-total'); if(el) el.textContent = total;
+  el = document.getElementById('rev-avg-stat'); if(el) el.textContent = avg.toFixed(1);
+  el = document.getElementById('rev-five'); if(el) el.textContent = fiveStars.length;
+  el = document.getElementById('rev-pending'); if(el) el.textContent = pending.length;
+  el = document.getElementById('rev-pending-badge'); if(el) el.textContent = pending.length;
+
+  // Rating distribution
+  var distEl = document.getElementById('rev-dist');
+  if(distEl) {
+    var html = '';
+    for(var s=5;s>=1;s--) {
+      var cnt = reviews.filter(function(r){return r.rating===s;}).length;
+      var pct = total ? Math.round(cnt/total*100) : 0;
+      html += '<div class="star-bar-row"><div class="star-bar-label">'+s+'★</div>'+
+        '<div class="star-bar"><div class="star-bar-fill" style="width:'+pct+'%"></div></div>'+
+        '<div class="star-bar-count">'+cnt+'</div></div>';
+    }
+    distEl.innerHTML = html || '<div style="color:var(--mu)">No reviews yet</div>';
+  }
+
+  // Pending list
+  var pendEl = document.getElementById('rev-pending-list');
+  if(pendEl) {
+    if(!pending.length) { pendEl.innerHTML='<div style="color:var(--mu);font-size:.78rem">No pending reviews</div>'; }
+    pendEl.innerHTML='';
+    pending.forEach(function(r){
+      var d=document.createElement('div');
+      d.className='rev-admin-card rev-pending';
+      d.innerHTML='<div class="rev-admin-hdr"><div><strong>'+r.name+'</strong></div><div class="rev-admin-rating">'+'★'.repeat(r.rating)+'☆'.repeat(5-r.rating)+'</div></div><div style="font-size:.78rem;color:var(--mu);margin-bottom:.65rem">'+r.text+'</div>';
+      var btns=document.createElement('div');btns.style.display='flex';btns.style.gap='.5rem';
+      var ab=document.createElement('button');ab.className='btn btn-green btn-sm';ab.textContent='Approve';
+      ab.onclick=(function(id){return function(){approveReview(id);};})(r.id);
+      var db=document.createElement('button');db.className='btn btn-red btn-sm';db.textContent='Delete';
+      db.onclick=(function(id){return function(){deleteReview(id);};})(r.id);
+      btns.appendChild(ab);btns.appendChild(db);d.appendChild(btns);pendEl.appendChild(d);
+    });
+  }
+
+  // All reviews
+  var allEl = document.getElementById('all-reviews-list');
+  if(allEl) {
+    var filtered = reviews;
+    if(filter==='approved') filtered=approved;
+    else if(filter==='pending') filtered=pending;
+    else if(['5','4','3','2','1'].includes(filter)) filtered=reviews.filter(function(r){return r.rating===parseInt(filter);});
+    if(!filtered.length){allEl.innerHTML='<div style="color:var(--mu);font-size:.78rem;text-align:center;padding:1rem">No reviews found</div>';return;}
+    allEl.innerHTML='';
+    filtered.forEach(function(r){
+      var d=document.createElement('div');
+      d.className='rev-admin-card'+(r.approved?'':' rev-pending');
+      d.innerHTML='<div class="rev-admin-hdr"><div><strong style="font-size:.82rem">'+r.name+'</strong> <span class="badge '+(r.approved?'badge-green':'badge-yellow')+'" style="margin-left:.4rem">'+(r.approved?'Approved':'Pending')+'</span></div>'+
+        '<div class="rev-admin-rating">'+'★'.repeat(r.rating)+'☆'.repeat(5-r.rating)+'</div></div>'+
+        '<div style="font-size:.78rem;color:var(--mu);margin-bottom:.5rem">'+r.text+'</div>'+
+        '<div style="font-size:.62rem;color:var(--mu);margin-bottom:.65rem">'+new Date(r.time||Date.now()).toLocaleDateString()+'</div>';
+      var btns=document.createElement('div');btns.style.cssText='display:flex;gap:.5rem';
+      if(!r.approved){var ab=document.createElement('button');ab.className='btn btn-green btn-sm';ab.textContent='Approve';ab.onclick=(function(id){return function(){approveReview(id);};})(r.id);btns.appendChild(ab);}
+      var db=document.createElement('button');db.className='btn btn-red btn-sm';db.textContent='Delete';db.onclick=(function(id){return function(){deleteReview(id);};})(r.id);
+      btns.appendChild(db);d.appendChild(btns);allEl.appendChild(d);
+    });
+  }
+}
+function approveReview(id) {
+  var reviews = JSON.parse(localStorage.getItem('calchub_reviews')||'[]');
+  reviews = reviews.map(function(r){ if(r.id===id||r.id===parseInt(id)) r.approved=true; return r; });
+  localStorage.setItem('calchub_reviews', JSON.stringify(reviews));
+  toast('Review approved!','success');
+  loadReviewsAdmin();
+}
+function approveAll() {
+  var reviews = JSON.parse(localStorage.getItem('calchub_reviews')||'[]');
+  reviews.forEach(function(r){r.approved=true;});
+  localStorage.setItem('calchub_reviews', JSON.stringify(reviews));
+  toast('All reviews approved!','success');
+  loadReviewsAdmin();
+}
+function deleteReview(id) {
+  if(!confirm('Delete this review?')) return;
+  var reviews = JSON.parse(localStorage.getItem('calchub_reviews')||'[]');
+  reviews = reviews.filter(function(r){ return String(r.id)!==String(id); });
+  localStorage.setItem('calchub_reviews', JSON.stringify(reviews));
+  toast('Review deleted','success');
+  loadReviewsAdmin();
+}
+
+// ── IMAGE BANNERS ──
+var _svgPresets={
+  finance:{color1:'#f97316',color2:'#dc2626',emoji:'🏦',tag:'💰 Finance',title:'EMI Calculator',desc:'Home loan, car loan — exact EMI instantly',calcId:'emi',calcSection:'finance'},
+  investment:{color1:'#7c3aed',color2:'#2563eb',emoji:'📈',tag:'📈 Investment',title:'SIP Returns Calculator',desc:'Power of compounding — wealth grow karo',calcId:'sip',calcSection:'finance'},
+  health:{color1:'#059669',color2:'#0891b2',emoji:'💪',tag:'💪 Health',title:'BMI & Health Tracker',desc:'Complete health profile in one place',calcId:'bmi',calcSection:'health'},
+  tax:{color1:'#d97706',color2:'#b45309',emoji:'🧾',tag:'🧾 Tax',title:'GST Calculator',desc:'5% 12% 18% 28% slab — CGST SGST IGST',calcId:'gst',calcSection:'finance'},
+  math:{color1:'#4f46e5',color2:'#7c3aed',emoji:'🧮',tag:'📐 Math',title:'Scientific Calculator',desc:'sin cos log √ π — all in one',calcId:'scientific',calcSection:'mathematics'},
+  explore:{color1:'#be185d',color2:'#9333ea',emoji:'🌟',tag:'🎯 Explore',title:'318+ Free Calculators',desc:'Finance Math Physics Chemistry & more',calcId:'',calcSection:''}
+};
+
+function fillSvgBannerAdmin(){
+  var type=document.getElementById('banner-svg-type').value;
+  var prev=document.getElementById('svg-banner-preview');
+  if(!type){if(prev)prev.style.display='none';return;}
+  var p=_svgPresets[type];if(!p)return;
+  // Fill form fields
+  if(!document.getElementById('banner-title').value)document.getElementById('banner-title').value=p.title;
+  if(!document.getElementById('banner-desc-txt').value)document.getElementById('banner-desc-txt').value=p.desc;
+  if(!document.getElementById('banner-tag-txt').value)document.getElementById('banner-tag-txt').value=p.tag;
+  // Show preview
+  if(prev){
+    prev.style.display='flex';
+    prev.style.background='linear-gradient(135deg,'+p.color1+','+p.color2+')';
+    document.getElementById('svg-prev-emoji').textContent=p.emoji;
+    document.getElementById('svg-prev-title').textContent=p.title;
+    document.getElementById('svg-prev-desc').textContent=p.desc;
+  }
+  toast('SVG preset loaded — "Add Banner" click karo!','success');
+}
+
+function previewBannerImg(){
+  var url=(document.getElementById('banner-url').value||'').trim();
+  var box=document.getElementById('banner-img-preview-box');
+  var img=document.getElementById('banner-preview');
+  if(!url){if(box)box.style.display='none';return;}
+  if(img){
+    img.src=url;
+    img.onload=function(){if(box)box.style.display='block';};
+    img.onerror=function(){if(box)box.style.display='none';toast('Image load nahi hui — URL check karo','warning');};
+  }
+  // Clear SVG selection
+  var bst=document.getElementById('banner-svg-type');if(bst)bst.value='';
+  var sp=document.getElementById('svg-banner-preview');if(sp)sp.style.display='none';
+}
+function saveBanner() {
+  var url = (document.getElementById('banner-url').value||'').trim();
+  var link = (document.getElementById('banner-link').value||'').trim();
+  var title = (document.getElementById('banner-title').value||'').trim();
+  var svgType = (document.getElementById('banner-svg-type')||{value:''}).value;
+  var descTxt = (document.getElementById('banner-desc-txt')||{value:''}).value.trim();
+  var tagTxt = (document.getElementById('banner-tag-txt')||{value:''}).value.trim();
+
+  if(!title){toast('Title daalo','warning');return;}
+  if(!url && !svgType){toast('Image URL ya SVG type select karo','warning');return;}
+
+  var banner = {
+    id: Date.now(),
+    url: url,
+    link: link||'#',
+    title: title,
+    desc: descTxt,
+    tag: tagTxt,
+    active: true,
+    created: new Date().toISOString()
+  };
+
+  // If SVG preset selected, add color/emoji info
+  if(svgType && _svgPresets && _svgPresets[svgType]){
+    var p=_svgPresets[svgType];
+    banner.svgType=svgType;
+    banner.color1=p.color1; banner.color2=p.color2;
+    banner.emoji=p.emoji; banner.tag=tagTxt||p.tag;
+    banner.calcId=p.calcId; banner.calcSection=p.calcSection;
+    banner.url=''; // No image URL for SVG banners
+  }
+
+  _banners.unshift(banner);
+  localStorage.setItem('calchub_banners', JSON.stringify(_banners));
+  toast('✅ Banner add ho gaya! Frontend pe show ho raha hai.','success');
+  
+  // Clear form
+  ['banner-url','banner-link','banner-title'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
+  var bp=document.getElementById('banner-preview');if(bp)bp.classList.remove('on');
+  var bib=document.getElementById('banner-img-preview-box');if(bib)bib.style.display='none';
+  var bst=document.getElementById('banner-svg-type');if(bst)bst.value='';
+  
+  loadBanners();
+  if(typeof refreshBannerPreview==='function')refreshBannerPreview();
+  addLog('info','Banner added: '+title);
+}
+}
+var _banners = JSON.parse(localStorage.getItem('calchub_banners')||'[]');
+
+function loadBanners(){
+  _banners=JSON.parse(localStorage.getItem('calchub_banners')||'[]');
+  var gallery=document.getElementById('banner-gallery');
+  if(!gallery)return;
+  if(!_banners.length){
+    gallery.innerHTML='<div style="color:var(--mu);font-size:.78rem;text-align:center;padding:1.25rem">No banners yet. Upar se add karo!</div>';
+    return;
+  }
+  gallery.innerHTML=_banners.map(function(b){
+    var isActive=b.active!==false;
+    // Thumbnail — image or gradient
+    var thumb=b.url&&b.url.trim()&&b.url!=='#'
+      ?'<img src="'+b.url+'" style="width:100%;height:65px;object-fit:cover;border-radius:6px;display:block" onerror="this.style.display=\'none\';this.nextSibling.style.display=\'flex\'"/>'
+       +'<div style="display:none;width:100%;height:65px;border-radius:6px;background:linear-gradient(135deg,'+(b.color1||'#7c3aed')+','+(b.color2||'#2563eb')+');align-items:center;justify-content:center;font-size:1.5rem">'+(b.emoji||'🖼️')+'</div>'
+      :'<div style="width:100%;height:65px;border-radius:6px;background:linear-gradient(135deg,'+(b.color1||'#7c3aed')+','+(b.color2||'#2563eb')+');display:flex;align-items:center;justify-content:center;font-size:1.5rem">'+(b.emoji||'🖼️')+'</div>';
+
+    return '<div style="background:var(--bg);border:1px solid '+(isActive?'rgba(16,185,129,.3)':'var(--b1)')+';border-radius:10px;padding:.65rem;margin-bottom:.5rem">'
+      +'<div style="display:flex;gap:.6rem;align-items:flex-start">'
+        +'<div style="width:95px;flex-shrink:0">'+thumb+'</div>'
+        +'<div style="flex:1;min-width:0">'
+          +'<div style="display:flex;align-items:center;gap:.35rem;margin-bottom:.2rem">'
+            +'<div style="font-family:Syne,sans-serif;font-weight:700;font-size:.74rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+b.title+'</div>'
+            +'<span style="font-size:.57rem;padding:.1rem .38rem;border-radius:20px;flex-shrink:0;background:'+(isActive?'rgba(16,185,129,.15)':'rgba(255,255,255,.06)')+';color:'+(isActive?'#10b981':'#6666aa')+'">'+(isActive?'● Live':'○ Off')+'</span>'
+          +'</div>'
+          +(b.desc?'<div style="font-size:.63rem;color:var(--mu);margin-bottom:.15rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+b.desc+'</div>':'')
+          +'<div style="font-size:.6rem;color:var(--mu)">'+(b.url&&b.url.trim()&&b.url!=='#'?'🔗 '+b.url.substring(0,40):'🎨 SVG: '+(b.svgType||'custom'))+'</div>'
+          +'<div style="font-size:.58rem;color:var(--mu);margin-top:.1rem">📅 '+new Date(b.created).toLocaleDateString('en-IN')+'</div>'
+        +'</div>'
+      +'</div>'
+      +'<div style="display:flex;gap:.3rem;margin-top:.5rem">'
+        +'<button class="btn btn-ghost btn-sm" onclick="toggleBannerActive('+b.id+')" style="flex:1;justify-content:center">'+(isActive?'⏸ Deactivate':'▶ Activate')+'</button>'
+        +'<button class="btn btn-red btn-sm" onclick="deleteBanner('+b.id+')">🗑</button>'
+      +'</div>'
+    +'</div>';
+  }).join('');
+}
+
+function toggleBannerActive(id){
+  var b=_banners.find(function(x){return x.id===id;});
+  if(!b)return;
+  b.active=!b.active;
+  localStorage.setItem('calchub_banners',JSON.stringify(_banners));
+  toast(b.active?'Banner activated ✅':'Banner deactivated','info');
+  loadBanners();
+}
+
+function activateBanner(id){toggleBannerActive(id);}
+
+function deleteBanner(id){
+  if(!confirm('Delete this banner?'))return;
+  _banners=_banners.filter(function(b){return b.id!==id;});
+  localStorage.setItem('calchub_banners',JSON.stringify(_banners));
+  toast('Banner deleted','warn');
+  loadBanners();
+}
+
+function clearAllBanners(){
+  if(!confirm('Sab banners delete karna chahte ho?'))return;
+  _banners=[];
+  localStorage.setItem('calchub_banners',JSON.stringify([]));
+  toast('All banners cleared','warn');
+  loadBanners();
+}
+
+// ── PUSH NOTIFICATIONS ──
+var _notifHistory = JSON.parse(localStorage.getItem('admin_notif_history')||'[]');
+
+/* ══ ENHANCED NOTIFICATION SYSTEM ══ */
+var _notifHistory=JSON.parse(localStorage.getItem('admin_notif_history')||'[]');
+
+var NOTIF_ICONS={info:'ℹ️',feature:'✨',promo:'🎉',alert:'⚠️',success:'✅',calc:'🧮'};
+var NOTIF_BG={info:'rgba(59,130,246,.15)',feature:'rgba(139,92,246,.15)',promo:'rgba(249,115,22,.15)',alert:'rgba(239,68,68,.15)',success:'rgba(16,185,129,.15)',calc:'rgba(139,92,246,.15)'};
+
+function updateNotifPreview(){
+  var title=document.getElementById('notif-title').value||'Notification Title';
+  var body=document.getElementById('notif-body').value||'Message body yahan dikhega...';
+  var type=document.getElementById('notif-type').value||'info';
+  var ti=document.getElementById('notif-prev-title');var bi=document.getElementById('notif-prev-body');var ii=document.getElementById('notif-prev-icon');
+  if(ti)ti.textContent=title;
+  if(bi)bi.textContent=body;
+  if(ii){ii.textContent=NOTIF_ICONS[type]||'🔔';ii.style.background=NOTIF_BG[type]||'rgba(59,130,246,.15)';}
+}
+
+function sendTestNotif(){
+  var title=document.getElementById('notif-title').value.trim()||'Test Notification';
+  var body=document.getElementById('notif-body').value.trim()||'Test message';
+  var type=document.getElementById('notif-type').value||'info';
+  var n={id:Date.now(),title:title,body:body,type:type,time:new Date().toISOString(),target:'test'};
+  var pushNotifs=JSON.parse(localStorage.getItem('admin_push_notifs')||'[]');
+  pushNotifs.unshift(n);
+  localStorage.setItem('admin_push_notifs',JSON.stringify(pushNotifs.slice(0,50)));
+  toast('✅ Test notification sent! CalcHub tab mein bell check karo','success');
+}
+
+function sendNotification(){
+  var title=document.getElementById('notif-title').value.trim();
+  var body=document.getElementById('notif-body').value.trim();
+  var target=document.getElementById('notif-target').value;
+  var type=document.getElementById('notif-type').value;
+  var schedule=document.getElementById('notif-schedule').value;
+  if(!title){toast('Title daalo','warning');return;}
+  if(!body){toast('Message body daalo','warning');return;}
+
+  var notif={id:Date.now(),title:title,body:body,type:type,target:target,time:new Date().toISOString(),schedule:schedule};
+
+  if(schedule==='now'){
+    var pushNotifs=JSON.parse(localStorage.getItem('admin_push_notifs')||'[]');
+    pushNotifs.unshift(notif);
+    localStorage.setItem('admin_push_notifs',JSON.stringify(pushNotifs.slice(0,50)));
+    toast('🔔 Notification sent to '+target+' users!','success');
+  } else {
+    // Schedule for later
+    var scheduled=JSON.parse(localStorage.getItem('admin_scheduled_notifs')||'[]');
+    var delayMs=schedule==='1h'?3600000:86400000;
+    notif.sendAt=new Date(Date.now()+delayMs).toISOString();
+    scheduled.push(notif);
+    localStorage.setItem('admin_scheduled_notifs',JSON.stringify(scheduled));
+    toast('⏰ Notification scheduled!','success');
+  }
+
+  _notifHistory.unshift(notif);
+  localStorage.setItem('admin_notif_history',JSON.stringify(_notifHistory.slice(0,100)));
+  document.getElementById('notif-title').value='';
+  document.getElementById('notif-body').value='';
+  updateNotifPreview();
+  loadNotifHistory();
+  addLog('info','Notification sent: '+title+' → '+target);
+}
+
+// Email target toggle
+document.getElementById('email-target')&&document.getElementById('email-target').addEventListener('change',function(){
+  var cw=document.getElementById('email-custom-wrap');
+  if(cw)cw.style.display=this.value==='custom'?'block':'none';
+});
+
+async function sendEmailBroadcast(){
+  var subject=document.getElementById('email-subject').value.trim();
+  var body=document.getElementById('email-body').value.trim();
+  var target=document.getElementById('email-target').value;
+  var custom=document.getElementById('email-custom').value.trim();
+  if(!subject){toast('Subject daalo','warning');return;}
+  if(!body){toast('Email body daalo','warning');return;}
+
+  // Try Gmail MCP
+  try {
+    toast('📧 Sending via Gmail...','info');
+    var recipients=target==='custom'?custom:'calchub-users-'+target+'@calchub.app';
+    var d=await apiCall('/admin/email-broadcast','POST',{subject:subject,body:body,target:target,custom:custom});
+    if(d&&d.success){toast('📧 Email sent successfully!','success');}
+    else{
+      // Fallback — save to queue for backend to process
+      var queue=JSON.parse(localStorage.getItem('admin_email_queue')||'[]');
+      queue.push({id:Date.now(),subject:subject,body:body,target:target,status:'queued',created:new Date().toISOString()});
+      localStorage.setItem('admin_email_queue',JSON.stringify(queue));
+      toast('📥 Email queued — backend se bheja jaega jab connected ho','info');
+    }
+  } catch(e){
+    toast('Email queue mein add kiya','info');
+  }
+
+  var hist=JSON.parse(localStorage.getItem('admin_email_history')||'[]');
+  hist.unshift({id:Date.now(),subject:subject,target:target,time:new Date().toISOString(),status:'sent'});
+  localStorage.setItem('admin_email_history',JSON.stringify(hist.slice(0,50)));
+  addLog('info','Email broadcast: '+subject+' → '+target);
+}
+
+function previewEmailTemplate(){
+  var subject=document.getElementById('email-subject').value||'Email Subject';
+  var body=document.getElementById('email-body').value||'Email body...';
+  var win=window.open('','_blank','width=600,height=500');
+  win.document.write('<html><head><title>Email Preview</title><style>body{font-family:Arial,sans-serif;max-width:560px;margin:2rem auto;padding:1rem;background:#f4f4f4}.box{background:#fff;border-radius:8px;padding:2rem;box-shadow:0 2px 8px rgba(0,0,0,.1)}.hdr{background:linear-gradient(135deg,#7c3aed,#059669);color:#fff;padding:1.5rem;border-radius:8px;margin-bottom:1rem;text-align:center;font-family:\'Syne\',sans-serif;font-weight:800;font-size:1.5rem}.subj{font-size:1rem;font-weight:bold;margin-bottom:1rem;color:#333;border-bottom:1px solid #eee;padding-bottom:.5rem}</style></head><body><div class="box"><div class="hdr">CalcHub</div><div class="subj">'+subject+'</div><div>'+body.replace(/\n/g,'<br>')+'</div></div></body></html>');
+}
+
+function loadNotifHistory(){
+  _notifHistory=JSON.parse(localStorage.getItem('admin_notif_history')||'[]');
+  var el=document.getElementById('notif-history');if(!el)return;
+  if(!_notifHistory.length){el.innerHTML='<div style="color:var(--mu);font-size:.75rem;text-align:center;padding:1rem">No notifications sent yet.</div>';return;}
+  el.innerHTML=_notifHistory.slice(0,20).map(function(n){
+    return '<div style="display:flex;align-items:center;gap:.65rem;padding:.6rem;border-bottom:1px solid var(--b1);border-radius:8px;margin-bottom:.3rem;background:var(--bg)">'
+      +'<div style="width:30px;height:30px;border-radius:7px;background:'+(NOTIF_BG[n.type]||'rgba(59,130,246,.15)')+';display:flex;align-items:center;justify-content:center;flex-shrink:0">'+(NOTIF_ICONS[n.type]||'🔔')+'</div>'
+      +'<div style="flex:1;min-width:0"><div style="font-size:.73rem;font-weight:700;font-family:Syne,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+n.title+'</div>'
+      +'<div style="font-size:.62rem;color:var(--mu)">→ '+(n.target||'all')+' · '+new Date(n.time||Date.now()).toLocaleDateString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})+'</div></div>'
+      +'<div style="font-size:.6rem;padding:.15rem .4rem;border-radius:20px;background:rgba(16,185,129,.12);color:#10b981;flex-shrink:0">'+(n.schedule==='now'?'Sent':'Scheduled')+'</div>'
+    +'</div>';
+  }).join('');
+}
+
+function clearNotifHistory(){
+  if(!confirm('Clear notification history?'))return;
+  _notifHistory=[];
+  localStorage.setItem('admin_notif_history','[]');
+  localStorage.setItem('admin_push_notifs','[]');
+  loadNotifHistory();
+  toast('History cleared','info');
+}
+
+
+// Load reviews badge on init
+setTimeout(function(){
+  var reviews = JSON.parse(localStorage.getItem('calchub_reviews')||'[]');
+  var pending = reviews.filter(function(r){return !r.approved;}).length;
+  var badge = document.getElementById('rev-pending-badge');
+  if(badge) badge.textContent = pending;
+}, 500);
+
+</script>
+</body>
+</html>
